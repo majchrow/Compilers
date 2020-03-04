@@ -42,6 +42,8 @@ print print
 \d+ (liczby całkowite)
 \d+\.\d (liczby zmiennoprzecinkowe) 
 (\"\w*\" | \'\w*\') (stringi)
+(\s) (dowolny biały znak)
+(#.*(\r)?\n) (komentarz, zaczyna się na #, dowolny znak kończy się \r\n lub \n)
 
 operatory binare: +, -, *, / 
 macierzowe operatory binarne (dla operacji element po elemencie): .+, .-, .*, ./ 
@@ -55,3 +57,9 @@ słowa kluczowe: if, else, for, while
 słowa kluczowe: break, continue oraz return 
 słowa kluczowe: eye, zeros oraz ones  
 słowa kluczowe: print 
+identyfikatory
+liczby całkowite
+liczby zmiennoprzecinkowe
+stringi
+dowolny biały znak
+komentarz
