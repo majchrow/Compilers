@@ -26,5 +26,6 @@ if __name__ == '__main__':
         tok = lexer.token()
         if not tok: 
             break      # No more input
-        print(tok)
+        line_number, token_type, token_value = tok.lineno, tok.type, tok.value
+        print(f"({line_number}): {token_type}({token_value})")
 
