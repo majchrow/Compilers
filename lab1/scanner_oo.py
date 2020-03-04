@@ -2,16 +2,15 @@ import ply.lex as lex
 import sys
 
 
-tokens = ( 'ASSIGN', 'SUB', 'ADD', 'MUL', 'DIV', 'LPAREN', 'RPAREN', 'ZEROS', 
-        'ID', 'ONES', 
+tokens = ( 'ASSIGN', 'SUB', 'ADD', 'MUL', 'DIV', 'LPAREN', 'RPAREN', 
+        'ID', 
         'DOTADD', 'DOTSUB', 'DOTMUL', 'DOTDIV', 
         'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN','DIVASSIGN',
         'GREATER', 'GEQ', 'LESSER', 'LEQ', 'DIFF', 'EQ', 
         'LBRACKET', 'RBRACKET', 'LCURLY', 'RCURLY', 'RANGE', 
         'TRANS', 'COMMA', 'SEMICOL',
-       'IF', 'ELSE', 'FOR', 'WHILE', 'BREAK', 'CONTINUE', 'RETURN', 'EYE', 'ZEROS', 'ONES',
-      'PRINT', 'INTNUM', 'FLOATNUM')
-      # , 'STRING')
+        'IF', 'ELSE', 'FOR', 'WHILE', 'BREAK', 'CONTINUE', 'RETURN', 'EYE', 'ZEROS', 'ONES',
+        'PRINT', 'INTNUM', 'FLOATNUM', 'STRING')
 
 reserved = {
     'if'        : 'IF',
@@ -26,7 +25,6 @@ reserved = {
     'ones'      : 'ONES',
     'print'     : 'PRINT'
 }
- 
 
 t_ASSIGN = r'='
 t_SUB = r'-'
@@ -71,7 +69,7 @@ t_PRINT = r'print'
 
 
 def t_FLOATNUM(t):
-    r'(\d+\.\d*|\.\d+)'
+    r'\d+\.\d*|\.\d+'
     t.value = float(t.value)
     return t
 
@@ -85,7 +83,13 @@ def t_ID(t):
     t.type = reserved.get(t.value,'ID')
     return t
 
-t_ignore= ' \t'
+def t_STRING(t):
+    r'\".*\"|\'.*\''
+    return t
+
+def t_COMMENT(t): # ignore comments
+    r'\#.*'
+    pass
 
 def t_newline(t):
     r'\n+'
@@ -94,6 +98,8 @@ def t_newline(t):
 def t_error(t):
     print("Illegal character '%s'" %t.value[0])
     t.lexer.skip(1)
+
+t_ignore = ' \t'
 
 lexer = lex.lex()
 fh = open(sys.argv[1], "r")
