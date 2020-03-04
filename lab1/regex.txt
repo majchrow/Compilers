@@ -1,0 +1,57 @@
++ +
+- -
+* *
+/ / 
+.+ .+
+.- .-
+.* .*
+./ ./
+= =
++= +=
+-= -=
+*= *=
+/= /=
+< <
+> >
+<= <=
+>= >=
+!= !=
+== ==
+( (
+) )
+[ [
+] ]
+{ {	
+} }
+: :
+' '
+, ,
+; :
+if if
+else else
+for for
+while while
+break break 
+continue contunue 
+return return
+eye eye
+zeros zeros
+ones ones
+print print
+[a-zA-Z_]\w* (identyfikatory)
+\d+ (liczby całkowite)
+\d+\.\d (liczby zmiennoprzecinkowe) 
+(\"\w*\" | \'\w*\') (stringi)
+
+operatory binare: +, -, *, / 
+macierzowe operatory binarne (dla operacji element po elemencie): .+, .-, .*, ./ 
+operatory przypisania: =, +=, -=, *=, /=
+operatory relacyjne: <, >, <=, >=, !=, == 
+nawiasy: (,), [,], {,} 
+operator zakresu: :
+transpozycja macierzy: '
+przecinek i średnik: 
+słowa kluczowe: if, else, for, while 
+słowa kluczowe: break, continue oraz return 
+słowa kluczowe: eye, zeros oraz ones  
+słowa kluczowe: print 
