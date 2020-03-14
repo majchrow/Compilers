@@ -4,7 +4,7 @@
 - Python3 (+ venv installed)
 
 ## Usage
-In *roor* directory `bash test.sh`.
+In *root* directory `bash test.sh`.
 
 ## Notes
 To pass other example change path to test file in **frist line** of test script `test.sh` **or** override file `example.txt`. 
