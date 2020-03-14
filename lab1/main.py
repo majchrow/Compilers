@@ -1,8 +1,8 @@
-#object oriented version
+# object oriented version
 
 import sys
-import scanner_oo # scanner_oo.py is a file you create, (it is not an external library)
 
+from scanner import Scanner  # Scanner needs to be provided manually
 
 if __name__ == '__main__':
 
@@ -10,22 +10,20 @@ if __name__ == '__main__':
         filename = sys.argv[1] if len(sys.argv) > 1 else "example.txt"
         file = open(filename, "r")
     except IOError:
-        print("Cannot open {0} file".format(filename))
+        print(f"Cannot open {filename} file")
         sys.exit(0)
 
     text = file.read()
-    lexer = scanner_oo.Scanner()
+    lexer = Scanner()
     lexer.build()
 
-    
     # Give the lexer some input
     lexer.input(text)
 
     # Tokenize
     while True:
         tok = lexer.token()
-        if not tok: 
-            break      # No more input
+        if not tok:
+            break  # No more input
         line_number, token_type, token_value = tok.lineno, tok.type, tok.value
         print(f"({line_number}): {token_type}({token_value})")
-
