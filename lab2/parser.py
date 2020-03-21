@@ -11,11 +11,17 @@ def create_dir(directory):
 
 
 class Parser(object):
-    tokens = Lexer.tokens
+    tokens = Lexer.tokens + ('UMINUS',)
 
     precedence = (  # TODO Fill
-        ("nonassoc", 'IF', 'WHILE'),
-        ("left", 'LCURLY', 'RCURLY'),
+        ('nonassoc', 'IFX'),
+        ('nonassoc', 'ELSE'),
+        ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
+        ('left', 'ADD', 'SUB', 'COMMA'),
+        ('left', 'MUL', 'DIV'),
+        ('right', 'UMINUS'),
+        ('left', 'LPAREN', 'RPAREN'),
+        ('left', 'LCURLY', 'RCURLY'),
     )
 
     def __init__(self, start="statements", outputdir="logs", tabmodule="baseparsetab"):
@@ -24,15 +30,15 @@ class Parser(object):
         self.parser = yacc.yacc(module=self, start=start, tabmodule=tabmodule, outputdir=outputdir)
 
     def parse(self, text):
+        self.text = text
         self.parser.parse(text)
 
     def p_error(self, p):  # Syntax error handler
-        # if p:
-        #     print("Syntax error at line {0}, column {1}: LexToken({2}, '{3}')".format(p.lineno,
-        #                                                                               scanner.find_tok_column(p),
-        #                                                                               p.type, p.value))
-        # else:
-        print("Unexpected end of input", p)
+        if p:
+            print(f"Syntax error at line {p.lineno}, column {self.lexer.find_tok_column(self.text, p)}:"
+                  f"LexToken({p.type}, {p.value})")
+        else:
+            print("Unexpected end of input")
 
     def p_empty(self, p):  # Empty production
         """empty :"""
@@ -43,58 +49,58 @@ class Parser(object):
                       | LCURLY statements RCURLY
                       | statement statements
         """
-        print(p)
 
     def p_statement(self, p):
-        """statement : IF expression block
+        """statement : IF expression block %prec IFX
+                     | IF expression block ELSE block
                      | WHILE expression block
                      | FOR for_expression block
                      | PRINT print_expression SEMICOL
                      | expressions SEMICOL
         """
-        print(p)
 
     def p_block(self, p):
         """block : statement
                  | LCURLY statements RCURLY
         """
-        print(p)
 
     def p_expressions(self, p):
         """expressions : assign_expression
                        | control_expression
         """
-        print(p)
 
-    def p_for_expression(self, p):  # TODO INTNUM can be ID
-        """ for_expression : ID ASSIGN INTNUM RANGE INTNUM"""
-        print(p)
+    def p_expr_uminus(self, p):
+        """expression : SUB expression %prec UMINUS"""
+
+    def p_for_expression(self, p):
+        """ for_expression : ID ASSIGN idnum RANGE idnum"""
+
+    def p_idnum(self, p):
+        """ idnum : ID
+                  | INTNUM
+        """
 
     def p_print_expression(self, p):
         """ print_expression : STRING
                              | term
-                             | COMMA print_expression
+                             | print_expression COMMA print_expression
         """
-        print(p)
 
     def p_assign_expression(self, p):
         """assign_expression : ID assign_op expression
         """
-        print(p)
 
     def p_control_expression(self, p):
         """control_expression : BREAK
                               | CONTINUE
-                              | RETURN
+                              | RETURN INTNUM
         """
-        print(p)
 
     def p_expression(self, p):
         """expression : expression op expression
                       | LPAREN expression RPAREN
                       | term
         """
-        print(p)
 
     def p_assign_op(self, p):
         """assign_op : ASSIGN
@@ -103,13 +109,11 @@ class Parser(object):
                      | MULASSIGN
                      | DIVASSIGN
         """
-        print(p)
 
     def p_op(self, p):
         """op : bin_op
               | rel_op
         """
-        print(p)
 
     def p_bin_op(self, p):
         """bin_op : ADD
@@ -117,7 +121,6 @@ class Parser(object):
                   | DIV
                   | MUL
         """
-        print(p)
 
     def p_rel_op(self, p):
         """rel_op : GE
@@ -127,11 +130,10 @@ class Parser(object):
                   | EQ
                   | NEQ
         """
-        print(p)
 
     def p_term(self, p):
         """term : ID
                 | INTNUM
                 | FLOATNUM
+                | UMINUS term
         """
-        print(p)

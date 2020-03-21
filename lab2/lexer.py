@@ -110,3 +110,8 @@ class Lexer(object):
 
     def token(self):
         return self.lexer.token()
+
+    def find_tok_column(self, text, token):
+        line_start = text.rfind('\n', 0, token.lexpos) + 1
+        return (token.lexpos - line_start) + 1
+
