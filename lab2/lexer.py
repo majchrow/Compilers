@@ -4,8 +4,8 @@ import ply.lex as lex
 class Lexer(object):
     tokens = ('ASSIGN', 'SUB', 'ADD', 'MUL', 'DIV', 'LPAREN', 'RPAREN',
               'ID', 'DOTADD', 'DOTSUB', 'DOTMUL', 'DOTDIV', 'ADDASSIGN',
-              'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN', 'GREATER', 'GEQ',
-              'LESSER', 'LEQ', 'DIFF', 'EQ', 'LBRACKET', 'RBRACKET', 'LCURLY',
+              'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN', 'GE', 'GEQ',
+              'LE', 'LEQ', 'NEQ', 'EQ', 'LBRACKET', 'RBRACKET', 'LCURLY',
               'RCURLY', 'RANGE', 'TRANS', 'COMMA', 'SEMICOL', 'IF', 'ELSE',
               'FOR', 'WHILE', 'BREAK', 'CONTINUE', 'RETURN', 'EYE', 'ZEROS',
               'ONES', 'PRINT', 'INTNUM', 'FLOATNUM', 'STRING')
@@ -39,11 +39,11 @@ class Lexer(object):
     t_SUBASSIGN = r'\-='
     t_MULASSIGN = r'\*='
     t_DIVASSIGN = r'/='
-    t_GREATER = r'>'
+    t_GE = r'>'
     t_GEQ = r'>='
-    t_LESSER = r'<'
+    t_LE = r'<'
     t_LEQ = r'<='
-    t_DIFF = r'!='
+    t_NEQ = r'!='
     t_EQ = r'=='
     t_LBRACKET = r'\['
     t_RBRACKET = r'\]'

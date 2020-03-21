@@ -1,5 +1,5 @@
 #!/bin/bash
-TEST='example/example1.m'
+TEST='examples/example1.m'
 
 if [[ -d ".venv" ]]
 then
