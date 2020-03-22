@@ -27,7 +27,7 @@ class Parser(object):
         ('left', 'UTRANS'),
     )
 
-    def __init__(self, start="statements", outputdir="logs", tabmodule="baseparsetab"):
+    def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
         create_dir(outputdir)
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, start=start, tabmodule=tabmodule, outputdir=outputdir)
@@ -45,6 +45,12 @@ class Parser(object):
     def p_empty(self, p):  # Empty production
         """empty :"""
         pass
+
+    def p_program(self, p):
+        """program : statements"""
+        p[0] = p[1]
+        for i in p[0].statements:  # No Tree Print Yet, just to check if parsing is working or not
+            print(i)
 
     def p_statements(self, p):
         """statements : empty
@@ -65,9 +71,9 @@ class Parser(object):
                  | LCURLY statements RCURLY
         """
         if len(p) == 2:
-            p[0] = p[1]
+            p[0] = Statements([p[1]])
         else:
-            pass  # TODO
+            p[0] = p[2]
 
     def p_statement(self, p):
         """statement : IF expression block %prec IFX
