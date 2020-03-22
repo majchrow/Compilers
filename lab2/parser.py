@@ -14,17 +14,16 @@ class Parser(object):
     tokens = Lexer.tokens
 
     precedence = (
+        ('left', 'LCURLY', 'RCURLY'),
         ('nonassoc', 'IFX'),
         ('nonassoc', 'ELSE'),
-        ('nonassoc', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
+        ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
+        ('left', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET'),
         ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
         ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB', 'COMMA'),
         ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('right', 'UMINUS'),
         ('left', 'UTRANS'),
-        ('left', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET'),
-        ('left', 'LCURLY', 'RCURLY'),
-
     )
 
     def __init__(self, start="statements", outputdir="logs", tabmodule="baseparsetab"):
@@ -67,29 +66,28 @@ class Parser(object):
                      | control_expression SEMICOL
         """
 
-    def p_boolean_expression(self, p):
-        """expression : expression binary_op expression
-                      | LPAREN expression RPAREN
-                      | variable
+    def p_expression(self, p):
+        """expression : expression ADD expression
+                      | expression SUB expression
+                      | expression DIV expression
+                      | expression MUL expression
+                      | expression DOTADD expression
+                      | expression DOTSUB expression
+                      | expression DOTDIV expression
+                      | expression DOTMUL expression
+                      | expression GE expression
+                      | expression GEQ expression
+                      | expression LE expression
+                      | expression LEQ expression
+                      | expression EQ expression
+                      | expression NEQ expression
         """
 
-    def p_binary_op(self, p):
-        """binary_op : ADD
-                     | SUB
-                     | DIV
-                     | MUL
-                     | DOTADD
-                     | DOTSUB
-                     | DOTDIV
-                     | DOTMUL
-                     | GE
-                     | GEQ
-                     | LE
-                     | LEQ
-                     | EQ
-                     | NEQ
-        """
-        p[0] = p[1]
+    def p_expression_group(self, p):
+        """expression : LPAREN expression RPAREN"""
+
+    def p_expression_variable(self, p):
+        """expression : variable"""
 
     def p_variable(self, p):
         """variable : ID
@@ -113,8 +111,8 @@ class Parser(object):
         """ for_expression : ID ASSIGN variable RANGE variable"""
 
     def p_print_expression(self, p):
-        """ print_expression : variable
-                             | print_expression COMMA print_expression
+        """ print_expression : variable COMMA print_expression
+                             | variable
         """
 
     def p_control_expression(self, p):
@@ -126,7 +124,6 @@ class Parser(object):
     def p_assignment(self, p):
         """assignment : ID assign_op expression
                       | ID matrix_ref assign_op expression
-                      | ID assign_op expression TRANS
         """
 
     def p_matrix_ref(self, p):
@@ -151,11 +148,11 @@ class Parser(object):
         """matrix : LBRACKET matrix_rows RBRACKET"""
 
     def p_matrix_rows(self, p):
-        """matrix_rows : matrix_rows SEMICOL matrix_row
+        """matrix_rows : matrix_row SEMICOL matrix_rows
                        | matrix_row
         """
 
     def p_matrix_row(self, p):
-        """matrix_row : matrix_row COMMA variable
+        """matrix_row : variable COMMA matrix_row
                       | variable
         """
