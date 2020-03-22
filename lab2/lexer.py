@@ -2,14 +2,6 @@ import ply.lex as lex
 
 
 class Lexer(object):
-    tokens = ('ASSIGN', 'SUB', 'ADD', 'MUL', 'DIV', 'LPAREN', 'RPAREN',
-              'ID', 'DOTADD', 'DOTSUB', 'DOTMUL', 'DOTDIV', 'ADDASSIGN',
-              'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN', 'GE', 'GEQ',
-              'LE', 'LEQ', 'NEQ', 'EQ', 'LBRACKET', 'RBRACKET', 'LCURLY',
-              'RCURLY', 'RANGE', 'TRANS', 'COMMA', 'SEMICOL', 'IF', 'ELSE',
-              'FOR', 'WHILE', 'BREAK', 'CONTINUE', 'RETURN', 'EYE', 'ZEROS',
-              'ONES', 'PRINT', 'INTNUM', 'FLOATNUM', 'STRING')
-
     reserved = {
         'if': 'IF',
         'else': 'ELSE',
@@ -23,6 +15,12 @@ class Lexer(object):
         'ones': 'ONES',
         'print': 'PRINT'
     }
+
+    tokens = ['ASSIGN', 'SUB', 'ADD', 'MUL', 'DIV', 'LPAREN', 'RPAREN', 'ID',
+              'DOTADD', 'DOTSUB', 'DOTMUL', 'DOTDIV', 'ADDASSIGN', 'SUBASSIGN',
+              'MULASSIGN', 'DIVASSIGN', 'GE', 'GEQ', 'LE', 'LEQ', 'NEQ', 'EQ',
+              'LBRACKET', 'RBRACKET', 'LCURLY', 'RCURLY', 'RANGE', 'TRANS',
+              'COMMA', 'SEMICOL', 'INTNUM', 'FLOATNUM', 'STRING'] + list(reserved.values())
 
     t_ASSIGN = r'='
     t_SUB = r'-'
@@ -111,7 +109,6 @@ class Lexer(object):
     def token(self):
         return self.lexer.token()
 
-    def find_tok_column(self, text, token):
-        line_start = text.rfind('\n', 0, token.lexpos) + 1
+    def find_tok_column(self, token):
+        line_start = self.lexer.lexdata.rfind('\n', 0, token.lexpos) + 1
         return (token.lexpos - line_start) + 1
-
