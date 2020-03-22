@@ -29,10 +29,12 @@ class Parser(object):
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
         create_dir(outputdir)
+        self.log = False
         self.lexer = Lexer()
         self.parser = yacc.yacc(module=self, start=start, tabmodule=tabmodule, outputdir=outputdir)
 
-    def parse(self, text):
+    def parse(self, text, log=False):
+        self.log = log
         self.parser.parse(text)
 
     def p_error(self, p):  # Syntax error handler
@@ -49,8 +51,8 @@ class Parser(object):
     def p_program(self, p):
         """program : statements"""
         p[0] = p[1]
-        for i in p[0].statements:  # No Tree Print Yet, just to check if parsing is working or not
-            print(i)
+        if self.log:
+            print(p[0])  # print parsed program (backwards)
 
     def p_statements(self, p):
         """statements : empty

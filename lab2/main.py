@@ -12,4 +12,4 @@ if __name__ == '__main__':
 
     parser = Parser()
     text = file.read()
-    parser.parse(text)
+    parser.parse(text, log=True)  # set True for log the parsed AST Nodes (printed backwards)
