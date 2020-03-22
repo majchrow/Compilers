@@ -55,7 +55,8 @@ class Parser(object):
             p[0] = Statements()
         elif len(p) == 3:
             sts = p[2] if p[2] else Statements()
-            p[0] = sts.statements.append(p[1])
+            sts.statements.append(p[1])
+            p[0] = sts
         else:
             p[0] = p[2] if p[2] else Statements()
 
@@ -80,11 +81,11 @@ class Parser(object):
         if p[1] == "if":
             p[0] = If(p[2], p[3]) if len(p) == 4 else If(p[2], p[3], p[5])
         elif p[1] == "while":
-            p[0] = While(p[1], p[2])
+            p[0] = While(p[2], p[3])
         elif p[1] == "for":
-            p[0] = For(p[1], p[2])
+            p[0] = For(p[2], p[3])
         elif p[1] == "print":
-            p[0] = Print(p[1])
+            p[0] = Print(p[2])
         else:  # assignment or control expression
             p[0] = p[1]
 
@@ -130,7 +131,7 @@ class Parser(object):
 
     def p_variable_trans(self, p):
         """variable : variable TRANS %prec UTRANS"""
-        p[0] = Variable(p[2].value, p[2].var_type, p[2].minus, not p[2].trans)
+        p[0] = Variable(p[1].value, p[1].var_type, p[1].minus, not p[1].trans)
 
     def p_const(self, p):
         """const : STRING
@@ -150,7 +151,8 @@ class Parser(object):
         if len(p) == 2:
             p[0] = PrintExpr(p[1])
         else:
-            p[0] = p[3].variables.append(p[1])
+            p[3].variables.append(p[1])
+            p[0] = p[3]
 
     def p_control_expression(self, p):
         """control_expression : BREAK
@@ -200,7 +202,9 @@ class Parser(object):
         if len(p) == 2:
             p[0] = [p[1]]
         else:
-            p[0] = p[3].append(p[1])
+            rows = p[3] if p[3] else []
+            rows.append(p[1])
+            p[0] = rows
 
     def p_matrix_row(self, p):
         """matrix_row : variable COMMA matrix_row
@@ -209,4 +213,6 @@ class Parser(object):
         if len(p) == 2:
             p[0] = [p[1]]
         else:
-            p[0] = p[3].append(p[1])
+            row = p[3] if p[3] else []
+            row.append(p[1])
+            p[0] = row

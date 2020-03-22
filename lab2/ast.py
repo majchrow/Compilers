@@ -43,14 +43,6 @@ class SpecialMatrix(Matrix):
         self.variable = variable
 
 
-class MatrixRow():
-    pass
-
-
-class MatrixRows():
-    pass
-
-
 class SimpleMatrix(Matrix):
     def __init__(self, rows: List[List[Variable]]):
         self.rows = rows
