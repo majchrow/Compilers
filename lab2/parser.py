@@ -11,7 +11,7 @@ def create_dir(directory):
 
 
 class Parser(object):
-    tokens = Lexer.tokens + ('UMINUS',)
+    tokens = Lexer.tokens
 
     precedence = (
         ('nonassoc', 'IFX'),
@@ -68,12 +68,12 @@ class Parser(object):
         """
 
     def p_boolean_expression(self, p):
-        """boolean_expression : term GE term
-                              | term GEQ term
-                              | term LE term
-                              | term LEQ term
-                              | term EQ term
-                              | term NEQ term
+        """boolean_expression : LPAREN factor GE factor RPAREN
+                              | LPAREN factor GEQ factor RPAREN
+                              | LPAREN factor LE factor RPAREN
+                              | LPAREN factor LEQ factor RPAREN
+                              | LPAREN factor EQ factor RPAREN
+                              | LPAREN factor NEQ factor RPAREN
         """
 
     def p_for_expression(self, p):
@@ -129,7 +129,6 @@ class Parser(object):
         """term : ID
                 | INTNUM
                 | FLOATNUM
-                | UMINUS term
         """
 
     def p_matrix_special(self, p):
@@ -149,7 +148,8 @@ class Parser(object):
 
     def p_matrix_row(self, p):
         """matrix_row : matrix_row COMMA term
-                      | term
+                      | INTNUM
+                      | FLOATNUM
         """
 
     def p_matrix_expression(self, p):
