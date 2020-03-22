@@ -13,10 +13,6 @@ class Statements(AstNode):
     def __init__(self, statements: List[Statement] = None):
         self.statements = statements if statements else []
 
-    def update(self, statements: List[Statement]):
-        if statements:
-            self.statements = self.statements + statements
-
 
 class Expr(AstNode):
     pass
@@ -39,6 +35,25 @@ class Variable(Expr):
         self.var_type = var_type
         self.minus = minus
         self.trans = trans
+
+
+class SpecialMatrix(Matrix):
+    def __init__(self, special: str, variable: Variable):
+        self.special = special
+        self.variable = variable
+
+
+class MatrixRow():
+    pass
+
+
+class MatrixRows():
+    pass
+
+
+class SimpleMatrix(Matrix):
+    def __init__(self, rows: List[List[Variable]]):
+        self.rows = rows
 
 
 class Block(AstNode):

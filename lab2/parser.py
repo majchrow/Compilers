@@ -21,7 +21,7 @@ class Parser(object):
         ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
         ('left', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET'),
         ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
-        ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB', 'COMMA'),
+        ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
         ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('right', 'UMINUS'),
         ('left', 'UTRANS'),
@@ -77,13 +77,13 @@ class Parser(object):
                      | assignment SEMICOL
                      | control_expression SEMICOL
         """
-        if p[1] == "IF":
-            p[0] = If(p[2], p[3]) if len(p) == 3 else If(p[2], p[3], p[5])
-        elif p[1] == "WHILE":
+        if p[1] == "if":
+            p[0] = If(p[2], p[3]) if len(p) == 4 else If(p[2], p[3], p[5])
+        elif p[1] == "while":
             p[0] = While(p[1], p[2])
-        elif p[1] == "FOR":
+        elif p[1] == "for":
             p[0] = For(p[1], p[2])
-        elif p[1] == "PRINT":
+        elif p[1] == "print":
             p[0] = Print(p[1])
         else:  # assignment or control expression
             p[0] = p[1]
@@ -122,15 +122,15 @@ class Parser(object):
 
     def p_variable_id(self, p):
         """variable : ID"""
-        p[0] = Variable(Id(p), Id)
+        p[0] = Variable(Id(p[1]), Id)
 
     def p_variable_uminus(self, p):
         """variable : SUB variable %prec UMINUS"""
-        p[0] = Variable(p[1].value, p[1].var_type, not p[1].minus, p[1].trans)
+        p[0] = Variable(p[2].value, p[2].var_type, not p[2].minus, p[2].trans)
 
     def p_variable_trans(self, p):
         """variable : variable TRANS %prec UTRANS"""
-        p[0] = Variable(p[1].value, p[1].var_type, p[1].minus, not p[1].trans)
+        p[0] = Variable(p[2].value, p[2].var_type, p[2].minus, not p[2].trans)
 
     def p_const(self, p):
         """const : STRING
@@ -157,12 +157,12 @@ class Parser(object):
                               | CONTINUE
                               | RETURN variable
         """
-        if p[1] == "BREAK":
+        if p[1] == "break":
             p[0] = Break()
-        elif p[1] == "CONTINUE":
+        elif p[1] == "continue":
             p[0] = Continue()
         else:  # RETURN
-            p[0] = Return(p[3])
+            p[0] = Return(p[2])
 
     def p_assignment(self, p):
         """assignment : ID assign_op expression
@@ -187,16 +187,26 @@ class Parser(object):
                   | ZEROS LPAREN variable RPAREN
                   | ONES LPAREN variable RPAREN
         """
+        p[0] = SpecialMatrix(p[1], p[3])
 
     def p_matrix(self, p):
         """matrix : LBRACKET matrix_rows RBRACKET"""
+        p[0] = SimpleMatrix(p[2])
 
     def p_matrix_rows(self, p):
         """matrix_rows : matrix_row SEMICOL matrix_rows
                        | matrix_row
         """
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = p[3].append(p[1])
 
     def p_matrix_row(self, p):
         """matrix_row : variable COMMA matrix_row
                       | variable
         """
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = p[3].append(p[1])
