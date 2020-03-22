@@ -2,6 +2,7 @@ import os
 
 import ply.yacc as yacc
 
+from ast import *
 from lexer import Lexer
 
 
@@ -50,11 +51,22 @@ class Parser(object):
                       | LCURLY statements RCURLY
                       | statement statements
         """
+        if len(p) == 2:
+            p[0] = Statements()
+        elif len(p) == 3:
+            sts = p[2] if p[2] else Statements()
+            p[0] = sts.statements.append(p[1])
+        else:
+            p[0] = p[2] if p[2] else Statements()
 
     def p_block(self, p):
         """block : statement
                  | LCURLY statements RCURLY
         """
+        if len(p) == 2:
+            p[0] = p[1]
+        else:
+            pass  # TODO
 
     def p_statement(self, p):
         """statement : IF expression block %prec IFX
@@ -65,6 +77,16 @@ class Parser(object):
                      | assignment SEMICOL
                      | control_expression SEMICOL
         """
+        if p[1] == "IF":
+            p[0] = If(p[2], p[3]) if len(p) == 3 else If(p[2], p[3], p[5])
+        elif p[1] == "WHILE":
+            p[0] = While(p[1], p[2])
+        elif p[1] == "FOR":
+            p[0] = For(p[1], p[2])
+        elif p[1] == "PRINT":
+            p[0] = Print(p[1])
+        else:  # assignment or control expression
+            p[0] = p[1]
 
     def p_expression(self, p):
         """expression : expression ADD expression
@@ -82,52 +104,74 @@ class Parser(object):
                       | expression EQ expression
                       | expression NEQ expression
         """
+        p[0] = BinOp(p[1], p[2], p[3])
 
     def p_expression_group(self, p):
         """expression : LPAREN expression RPAREN"""
+        p[0] = p[2]
 
     def p_expression_variable(self, p):
         """expression : variable"""
+        p[0] = p[1]
 
     def p_variable(self, p):
-        """variable : ID
-                    | const
+        """variable : const
                     | matrix
         """
+        p[0] = p[1]
+
+    def p_variable_id(self, p):
+        """variable : ID"""
+        p[0] = Variable(Id(p), Id)
 
     def p_variable_uminus(self, p):
         """variable : SUB variable %prec UMINUS"""
+        p[0] = Variable(p[1].value, p[1].var_type, not p[1].minus, p[1].trans)
 
     def p_variable_trans(self, p):
         """variable : variable TRANS %prec UTRANS"""
+        p[0] = Variable(p[1].value, p[1].var_type, p[1].minus, not p[1].trans)
 
     def p_const(self, p):
         """const : STRING
                  | FLOATNUM
                  | INTNUM
         """
+        p[0] = Variable(p[1], type(p[1]))
 
     def p_for_expression(self, p):
         """ for_expression : ID ASSIGN variable RANGE variable"""
+        p[0] = ForExpr(p[1], p[3], p[5])
 
     def p_print_expression(self, p):
         """ print_expression : variable COMMA print_expression
                              | variable
         """
+        if len(p) == 2:
+            p[0] = PrintExpr(p[1])
+        else:
+            p[0] = p[3].variables.append(p[1])
 
     def p_control_expression(self, p):
         """control_expression : BREAK
                               | CONTINUE
-                              | RETURN INTNUM
+                              | RETURN variable
         """
+        if p[1] == "BREAK":
+            p[0] = Break()
+        elif p[1] == "CONTINUE":
+            p[0] = Continue()
+        else:  # RETURN
+            p[0] = Return(p[3])
 
     def p_assignment(self, p):
         """assignment : ID assign_op expression
-                      | ID matrix_ref assign_op expression
+                      | ID LBRACKET variable COMMA variable RBRACKET assign_op expression
         """
-
-    def p_matrix_ref(self, p):
-        """matrix_ref : LBRACKET variable COMMA variable RBRACKET"""
+        if len(p) == 9:
+            p[0] = Assignment(p[1], p[7], p[8], (p[3], p[5]))
+        else:
+            p[0] = Assignment(p[1], p[2], p[3])
 
     def p_assign_op(self, p):
         """assign_op : ASSIGN
