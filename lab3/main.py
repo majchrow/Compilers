@@ -1,21 +1,19 @@
-
 import sys
-import ply.yacc as yacc
-from Mparser import Mparser
-from TreePrinter import TreePrinter
-
+import os
+from parser import Parser
 
 if __name__ == '__main__':
-
+    filename = sys.argv[1] if len(sys.argv) > 1 else "example1.m"
     try:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "example.txt"
         file = open(filename, "r")
     except IOError:
-        print("Cannot open {0} file".format(filename))
+        print(f"Cannot open {filename} file")
         sys.exit(0)
-
-    Mparser = Mparser()
-    parser = yacc.yacc(module=Mparser)
+    try:
+        import TreePrinter  # Add printTree to AST class dynamically
+    except ImportError:
+        print(f"TreePrinter not found in {os.path.dirname(os.path.realpath(__file__))}")
+        sys.exit(0)
+    parser = Parser()
     text = file.read()
-    ast = parser.parse(text, lexer=Mparser.scanner)
-    ast.printTree()
+    parser.parse(text, ast=True)

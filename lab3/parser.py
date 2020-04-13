@@ -1,4 +1,5 @@
 import os
+
 import ply.yacc as yacc
 
 from AST import *
@@ -10,7 +11,7 @@ def create_dir(directory):
         os.makedirs(directory)
 
 
-class Mparser(object):
+class Parser(object):
     tokens = Scanner.tokens
 
     precedence = (
@@ -28,12 +29,12 @@ class Mparser(object):
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
         create_dir(outputdir)
-        self.log = False
+        self.ast = False
         self.scanner = Scanner()
         self.parser = yacc.yacc(module=self, start=start, tabmodule=tabmodule, outputdir=outputdir)
 
-    def parse(self, text, log=False):
-        self.log = log
+    def parse(self, text, ast=False):
+        self.ast = ast
         self.parser.parse(text)
 
     def p_error(self, p):  # Syntax error handler
@@ -50,8 +51,8 @@ class Mparser(object):
     def p_program(self, p):
         """program : statements"""
         p[0] = p[1]
-        if self.log:
-            print(p[0])  # print parsed program (backwards)
+        if self.ast:
+            p[0].printTree()
 
     def p_statements(self, p):
         """statements : empty
