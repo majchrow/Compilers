@@ -24,7 +24,6 @@ class Parser(object):
         ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
         ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('right', 'UMINUS'),
-        ('left', 'UTRANS'),
     )
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
@@ -138,7 +137,7 @@ class Parser(object):
         p[0] = Variable(p[2].value, p[2].var_type, not p[2].minus, p[2].trans)
 
     def p_variable_trans(self, p):
-        """variable : variable TRANS %prec UTRANS"""
+        """variable : variable TRANS"""
         p[0] = Variable(p[1].value, p[1].var_type, p[1].minus, not p[1].trans)
 
     def p_const(self, p):
