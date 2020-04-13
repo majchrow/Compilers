@@ -12,7 +12,7 @@ def addToClass(cls):
 
 
 def printWithIndent(value, indent_num):
-    print("| " * indent_num + str(value))
+    print("|  " * indent_num + str(value))
 
 
 class TreePrinter:
@@ -80,11 +80,13 @@ class TreePrinter:
 
     @addToClass(Variable)
     def printTree(self, indent=0):
-        printWithIndent(self.value, indent)
         if self.minus:
             printWithIndent("MINUS", indent)
+            indent += 1
         if self.trans:
             printWithIndent("TRANSPOSE", indent)
+            indent += 1
+        printWithIndent(self.value, indent)
 
     @addToClass(BinOp)
     def printTree(self, indent=0):
@@ -99,16 +101,23 @@ class TreePrinter:
 
     @addToClass(SimpleMatrix)
     def printTree(self, indent=0):
-        printWithIndent("VECTOR", indent)
-        for row in self.rows:
-            printWithIndent("VECTOR", indent + 1)
-            for var in row:
-                var.printTree(indent + 2)
+        def print_vector(vector, indent):
+            printWithIndent("VECTOR", indent)
+            indent += 1
+            for elem in vector:
+                if (type(elem) is list):
+                    print_vector(elem, indent)
+                elif elem == ';':
+                    printWithIndent("SEMICOL", indent)
+                else:
+                    elem.printTree(indent)
+        vec = self.vector
+        print_vector(vec, indent)
 
     @addToClass(Id)
     def printTree(self, indent=0):
         printWithIndent("ID", indent)
-        printWithIndent(self.value, indent+1)
+        printWithIndent(self.value, indent + 1)
 
     @addToClass(Block)
     def printTree(self, indent=0):
@@ -126,4 +135,3 @@ class TreePrinter:
     def printTree(self, indent=0):
         for var in self.variables:
             var.printTree(indent)
-

@@ -200,27 +200,34 @@ class Parser(object):
         p[0] = SpecialMatrix(p[1], p[3])
 
     def p_matrix(self, p):
-        """matrix : LBRACKET matrix_rows RBRACKET"""
-        p[0] = SimpleMatrix(p[2])
+        """matrix : vector"""
+        p[0] = SimpleMatrix(p[1])
 
-    def p_matrix_rows(self, p):
-        """matrix_rows : matrix_row SEMICOL matrix_rows
-                       | matrix_row
+    def p_vector(self, p):
+        """vector : LBRACKET outer_list RBRACKET"""
+        p[0] = p[2]
+
+    def p_outerlist(self, p):
+        """outer_list : outer_list SEMICOL inner_list
+                      | inner_list
+        """
+        if len(p) == 2:
+            p[0] = p[1]
+        else:
+            p[0] = p[1] + [';'] + p[3]  # Keep track of SEMICOL, for inputs like [1;2,3,4]
+
+    def p_innerlist(self, p):
+        """inner_list : inner_list COMMA elem
+                      | elem
         """
         if len(p) == 2:
             p[0] = [p[1]]
         else:
-            rows = p[3] if p[3] else []
-            rows = [p[1]] + rows
-            p[0] = rows
+            p[0] = p[1] + [p[3]]
 
-    def p_matrix_row(self, p):
-        """matrix_row : variable COMMA matrix_row
-                      | variable
+    def p_elem(self, p):
+        """elem : const
+                | ID
+                | vector
         """
-        if len(p) == 2:
-            p[0] = [p[1]]
-        else:
-            row = p[3] if p[3] else []
-            row = [p[1]] + row
-            p[0] = row
+        p[0] = p[1]

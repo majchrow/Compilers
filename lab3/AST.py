@@ -60,13 +60,8 @@ class SpecialMatrix(Matrix):
 
 
 class SimpleMatrix(Matrix):
-    def __init__(self, rows: List[List[Variable]]):
-        self.rows = rows
-
-    def __str__(self):
-        variables = "\n".join([var.__str__() for row in self.rows for var in row])
-        return f"SimpleMatrix((rows, {variables}))"
-
+    def __init__(self, vector: List[any]):
+        self.vector = vector
 
 class Block(AstNode):
     def __init__(self, statements: Statements):
