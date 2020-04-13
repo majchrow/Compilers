@@ -86,7 +86,10 @@ class TreePrinter:
         if self.trans:
             printWithIndent("TRANSPOSE", indent)
             indent += 1
-        printWithIndent(self.value, indent)
+        try:  # for example X = -ones(3)'
+            self.value.printTree(indent + 1)
+        except AttributeError:
+            printWithIndent(self.value, indent)
 
     @addToClass(BinOp)
     def printTree(self, indent=0):
@@ -111,6 +114,7 @@ class TreePrinter:
                     printWithIndent("SEMICOL", indent)
                 else:
                     elem.printTree(indent)
+
         vec = self.vector
         print_vector(vec, indent)
 

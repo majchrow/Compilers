@@ -22,7 +22,11 @@ class Expr(AstNode):
 
 
 class Matrix(AstNode):
-    pass
+    def __init__(self):
+        self.value = self
+        self.var_type = type(self)
+        self.minus = False
+        self.trans = False
 
 
 class Id:
@@ -51,6 +55,7 @@ class Variable(Expr):
 
 class SpecialMatrix(Matrix):
     def __init__(self, special: str, variable: Variable):
+        super().__init__()
         self.special = special
         self.variable = variable
 
@@ -61,7 +66,9 @@ class SpecialMatrix(Matrix):
 
 class SimpleMatrix(Matrix):
     def __init__(self, vector: List[any]):
+        super().__init__()
         self.vector = vector
+
 
 class Block(AstNode):
     def __init__(self, statements: Statements):
