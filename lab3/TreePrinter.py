@@ -12,7 +12,7 @@ def addToClass(cls):
 
 
 def printWithIndent(value, indent_num):
-    print("| " * indent_num + value)
+    print("| " * indent_num + str(value))
 
 
 class TreePrinter:
@@ -54,8 +54,8 @@ class TreePrinter:
         if self.with_ref:
             printWithIndent("REF", indent + 1)
             printWithIndent(self.assign_id, indent + 2)
-            printWithIndent(self.with_ref[0], indent + 2)
-            printWithIndent(self.with_ref[1], indent + 2)
+            self.with_ref[0].printTree(indent + 2)
+            self.with_ref[1].printTree(indent + 2)
         else:
             printWithIndent(self.assign_id, indent + 1)
         self.variable.printTree(indent + 1)
@@ -105,10 +105,10 @@ class TreePrinter:
             for var in row:
                 var.printTree(indent + 2)
 
-    # @addToClass(Id)
-    # def printTree(self, indent=0):
-    #     printWithIndent("ID", indent)
-    #     printWithIndent(self.value, indent+1)
+    @addToClass(Id)
+    def printTree(self, indent=0):
+        printWithIndent("ID", indent)
+        printWithIndent(self.value, indent+1)
 
     @addToClass(Block)
     def printTree(self, indent=0):
@@ -119,15 +119,11 @@ class TreePrinter:
     def printTree(self, indent=0):
         printWithIndent(self.for_id, indent)
         printWithIndent("RANGE", indent)
-        printWithIndent(self.start_var, indent + 1)
-        printWithIndent(self.end_var, indent + 1)
+        self.start_var.printTree(indent + 1)
+        self.end_var.printTree(indent + 1)
 
     @addToClass(PrintExpr)
     def printTree(self, indent=0):
         for var in self.variables:
             var.printTree(indent)
 
-
-if __name__ == "__name__":
-    print("here")
-    tp = TreePrinter()

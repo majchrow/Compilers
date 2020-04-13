@@ -63,7 +63,7 @@ class Parser(object):
             p[0] = Statements()
         elif len(p) == 3:
             sts = p[2] if p[2] else Statements()
-            sts.statements.append(p[1])
+            sts.statements = [p[1]] + sts.statements
             p[0] = sts
         else:
             p[0] = p[2] if p[2] else Statements()
@@ -159,7 +159,7 @@ class Parser(object):
         if len(p) == 2:
             p[0] = PrintExpr(p[1])
         else:
-            p[3].variables.append(p[1])
+            p[3].variables = [p[1]] + p[3].variables
             p[0] = p[3]
 
     def p_control_expression(self, p):
@@ -211,7 +211,7 @@ class Parser(object):
             p[0] = [p[1]]
         else:
             rows = p[3] if p[3] else []
-            rows.append(p[1])
+            rows = [p[1]] + rows
             p[0] = rows
 
     def p_matrix_row(self, p):
@@ -222,5 +222,5 @@ class Parser(object):
             p[0] = [p[1]]
         else:
             row = p[3] if p[3] else []
-            row.append(p[1])
+            row = [p[1]] + row
             p[0] = row
