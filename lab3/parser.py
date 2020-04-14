@@ -31,9 +31,11 @@ class Parser(object):
         self.ast = False
         self.scanner = Scanner()
         self.parser = yacc.yacc(module=self, start=start, tabmodule=tabmodule, outputdir=outputdir)
+        self.error = False
 
     def parse(self, text, ast=False):
         self.ast = ast
+        self.error = False
         self.parser.parse(text)
 
     def p_error(self, p):  # Syntax error handler
@@ -42,6 +44,7 @@ class Parser(object):
                   f"LexToken({p.type}, {p.value})")
         else:
             print("Unexpected end of input")
+        self.error = True
 
     def p_empty(self, p):  # Empty production
         """empty :"""
@@ -51,7 +54,11 @@ class Parser(object):
         """program : statements"""
         p[0] = p[1]
         if self.ast:
-            p[0].printTree()
+            if not self.error:
+                p[0].printTree()
+            else:
+                print(f"Provided program has Syntax error, AST Tree won't be printed")
+
 
     def p_statements(self, p):
         """statements : empty
