@@ -96,7 +96,7 @@ class Scanner(object):
         t.lexer.lineno += len(t.value)
 
     def t_error(self, t):
-        print(f"({t.lexer.lineno}): ERROR: Illegal character '{t.value[0]}'")
+        print(f"Illegal character '{t.value[0]}' at line {t.lineno}, column {self.find_tok_column(t)}, skipping.")
         t.lexer.skip(1)
 
     # Build the lexer
