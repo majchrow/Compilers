@@ -90,7 +90,7 @@ class Parser(object):
         if len(p) == 2:
             p[0] = p[1]
         else:
-            p[0] = p[2]
+            p[0] = Statements([p[2]])
 
     def p_statement(self, p):
         """statement : IF expression block %prec IFX

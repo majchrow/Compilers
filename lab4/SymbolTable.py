@@ -25,7 +25,7 @@ class SymbolTable(object):
     def __init__(self):
         self.current_scope_name = SCOPE.GLOBAL
         self.current_scope = {}
-        self.scopes = [self.current_scope]
+        self.scopes = []
 
     def set_scope_name(self, scope: SCOPE):
         prev_scope = self.current_scope_name
@@ -45,8 +45,9 @@ class SymbolTable(object):
         return self.current_scope
 
     def push_scope(self):
-        self.current_scope = deepcopy(self.current_scope)
         self.scopes.append(self.current_scope)
+        self.current_scope = deepcopy(self.current_scope)
 
     def pop_scope(self):
-        return self.scopes.pop()
+        self.current_scope = self.scopes.pop()
+        return self.current_scope
