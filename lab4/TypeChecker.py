@@ -63,9 +63,16 @@ class TypeChecker(NodeVisitor):
         return var_type
 
     def visit_SpecialMatrix(self, node: SpecialMatrix):
-        var_type = self.visit(node.variable)
+        if len(node.expressions) != 1:
+            print("1 argument expected")
+            return
+        var_type = self.visit(node.expressions[0])
         if var_type != int:
             print("Expected int")
+
+    def visit_Assignments(self, node: Assignments):
+        for assignment in node.assignments:
+            self.visit(assignment)
 
     def visit_SimpleMatrix(self, node: SimpleMatrix):
         pass
@@ -88,12 +95,15 @@ class TypeChecker(NodeVisitor):
 
     def visit_ForExpr(self, node: ForExpr):
         scope = self.table.set_scope_name(SCOPE.LOOP)
-        self.visit(node.start_var)
-        self.visit(node.end_var)
+        self.visit(node.start_expr)
+        self.visit(node.end_expr)
         self.table.set_scope_name(scope)
 
     def visit_Return(self, node: Return):
-        var_type = self.visit(node.expresion)
+        if len(node.expressions) != 1:
+            print("1 argument expected")
+            return
+        var_type = self.visit(node.expressions[0])
         if var_type != int:
             print("Returning ", var_type, " forbidden")
 
@@ -106,7 +116,7 @@ class TypeChecker(NodeVisitor):
             self.visit(expr)
 
     def visit_Assignment(self, node: Assignment):
-        var_type = self.visit(node.variable)
+        var_type = self.visit(node.expression)
         self.table.put(node.assign_id.value, var_type)
 
     def visit_Break(self, node: Break):

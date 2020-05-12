@@ -16,4 +16,4 @@ if __name__ == '__main__':
         sys.exit(0)
     parser = Parser()
     text = file.read()
-    parser.parse(text, ast=False, type_check=False)
+    parser.parse(text, ast=False, type_check=True)

@@ -164,7 +164,7 @@ class Parser(object):
                  | FLOATNUM
                  | INTNUM
         """
-        p[0] = Variable(p[1], type(p[1]))
+        p[0] = p[1]
 
     def p_for_expression(self, p):
         """ for_expression : ID ASSIGN expression RANGE expression"""

@@ -96,8 +96,8 @@ class Assignment(AstNode):
 
 
 class Assignments(Statement):
-    def __init__(self, statements: List[Assignment]):
-        self.statements = statements
+    def __init__(self, assignments: List[Assignment]):
+        self.assignments = assignments
 
 
 class ControlExpr(Expr):
