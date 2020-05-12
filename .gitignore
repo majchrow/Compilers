@@ -2,3 +2,6 @@
 .idea/
 example*
 examples/
+__pycache__/
+tmp/
+logs/
