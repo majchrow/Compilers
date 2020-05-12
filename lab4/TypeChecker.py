@@ -26,68 +26,67 @@ class NodeVisitor(object):
 
 class TypeChecker(NodeVisitor):
 
-    def visit_AstNode(self, node: AstNode):
-        pass
-
-    def visit_Statement(self, node: Statement):
-        pass
-
     def visit_Statements(self, node: Statements):
-        pass
-
-    def visit_Expr(self, node: Expr):
-        pass
-
-    def visit_Matrix(self, node: Matrix):
-        pass
-
-    def visit_Id(self, node: Id):
-        pass
+        for statement in node.statements:
+            self.visit(statement)
 
     def visit_Variable(self, node: Variable):
         pass
+        # Type checking here
 
     def visit_SpecialMatrix(self, node: SpecialMatrix):
+        self.visit(node.variable)
         pass
+        # Type checking here
 
     def visit_SimpleMatrix(self, node: SimpleMatrix):
         pass
+        # Type checking here
 
     def visit_Block(self, node: Block):
-        pass
+        self.visit(node.statements)
 
     def visit_If(self, node: If):
-        pass
+        self.visit(node.cond_expr)
+        self.visit(node.if_block)
+        if node.else_block:
+            self.visit(node.else_block)
 
     def visit_While(self, node: While):
-        pass
+        self.visit(node.cond_expr)
+        self.visit(node.while_block)
 
     def visit_ForExpr(self, node: ForExpr):
-        pass
+        self.visit(node.start_var)
+        self.visit(node.end_var)
 
     def visit_PrintExpr(self, node: PrintExpr):
         pass
 
     def visit_For(self, node: For):
-        pass
+        self.visit(node.iteration)
+        self.visit(node.for_block)
 
     def visit_Print(self, node: Print):
-        pass
+        self.visit(node.print_expr)
 
     def visit_Assignment(self, node: Assignment):
-        pass
-
-    def visit_ControlExpr(self, node: ControlExpr):
-        pass
+        self.visit(node.variable)
+        # Type checking here
 
     def visit_Break(self, node: Break):
         pass
+        # Type checking here
 
     def visit_Continue(self, node: Continue):
         pass
+        # Type checking here
 
     def visit_Return(self, node: Return):
         pass
+        # Type checking here
 
     def visit_BinOp(self, node: BinOp):
-        pass
+        self.visit(node.left_expr)
+        self.visit(node.right_expr)
+        # Type checking here

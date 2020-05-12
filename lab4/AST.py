@@ -22,11 +22,7 @@ class Expr(AstNode):
 
 
 class Matrix(AstNode):
-    def __init__(self):
-        self.value = self
-        self.var_type = type(self)
-        self.minus = False
-        self.trans = False
+    pass
 
 
 class Id:
@@ -113,8 +109,8 @@ class ForExpr(AstNode):
 
 
 class PrintExpr(AstNode):
-    def __init__(self, variable: Variable):
-        self.variables = [variable]
+    def __init__(self, variable: List[Variable]):
+        self.variables = variable
 
     def __str__(self):
         variables = "\n".join([var.__str__() for var in self.variables])

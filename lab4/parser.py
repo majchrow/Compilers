@@ -171,7 +171,7 @@ class Parser(object):
                              | variable
         """
         if len(p) == 2:
-            p[0] = PrintExpr(p[1])
+            p[0] = PrintExpr([p[1]])
         else:
             p[3].variables = [p[1]] + p[3].variables
             p[0] = p[3]
