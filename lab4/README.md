@@ -1,4 +1,4 @@
-# AST printer for matrix calculations in simple language (context free grammar)
+# Type checker for matrix calculations in simple language (context free grammar)
 
 ## Requirements
 - Python3 (+ venv installed)
