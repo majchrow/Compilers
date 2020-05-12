@@ -68,7 +68,7 @@ class Parser(object):
 
     def p_statements(self, p):
         """statements : empty
-                      | LCURLY statements RCURLY
+                      | LCURLY statements RCURLY statements
                       | statement statements
         """
         if len(p) == 2:
@@ -78,7 +78,10 @@ class Parser(object):
             sts.statements = [p[1]] + sts.statements
             p[0] = sts
         else:
-            p[0] = Statements([p[2]]) if p[2] else Statements([])
+            outer = p[4] if p[4] else Statements([])
+            inner = p[2] if p[2] else Statements([])
+            outer.statements = [inner] + outer.statements
+            p[0] = outer
 
     def p_block(self, p):
         """block : statement
