@@ -26,68 +26,68 @@ class NodeVisitor(object):
 
 class TypeChecker(NodeVisitor):
 
-    def visit_AstNode(self, node: object):
+    def visit_AstNode(self, node: AstNode):
         pass
 
-    def visit_Statement(self, node: AstNode):
+    def visit_Statement(self, node: Statement):
         pass
 
-    def visit_Statements(self, node: AstNode):
+    def visit_Statements(self, node: Statements):
         pass
 
-    def visit_Expr(self, node: AstNode):
+    def visit_Expr(self, node: Expr):
         pass
 
-    def visit_Matrix(self, node: AstNode):
+    def visit_Matrix(self, node: Matrix):
         pass
 
-    def visit_Id(self, node: any):
+    def visit_Id(self, node: Id):
         pass
 
-    def visit_Variable(self, node: Expr):
+    def visit_Variable(self, node: Variable):
         pass
 
-    def visit_SpecialMatrix(self, node: Matrix):
+    def visit_SpecialMatrix(self, node: SpecialMatrix):
         pass
 
-    def visit_SimpleMatrix(self, node: Matrix):
+    def visit_SimpleMatrix(self, node: SimpleMatrix):
         pass
 
-    def visit_Block(self, node: AstNode):
+    def visit_Block(self, node: Block):
         pass
 
-    def visit_If(self, node: Statement):
+    def visit_If(self, node: If):
         pass
 
-    def visit_While(self, node: Statement):
+    def visit_While(self, node: While):
         pass
 
-    def visit_ForExpr(self, node: AstNode):
+    def visit_ForExpr(self, node: ForExpr):
         pass
 
-    def visit_PrintExpr(self, node: AstNode):
+    def visit_PrintExpr(self, node: PrintExpr):
         pass
 
-    def visit_For(self, node: Statement):
+    def visit_For(self, node: For):
         pass
 
-    def visit_Print(self, node: Statement):
+    def visit_Print(self, node: Print):
         pass
 
-    def visit_Assignment(self, node: Statement):
+    def visit_Assignment(self, node: Assignment):
         pass
 
-    def visit_ControlExpr(self, node: Statement):
+    def visit_ControlExpr(self, node: ControlExpr):
         pass
 
-    def visit_Break(self, node: ControlExpr):
+    def visit_Break(self, node: Break):
         pass
 
-    def visit_Continue(self, node: ControlExpr):
+    def visit_Continue(self, node: Continue):
         pass
 
-    def visit_Return(self, node: ControlExpr):
+    def visit_Return(self, node: Return):
         pass
 
-    def visit_BinOp(self, node: Expr):
+    def visit_BinOp(self, node: BinOp):
         pass
