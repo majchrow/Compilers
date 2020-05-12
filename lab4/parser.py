@@ -42,7 +42,7 @@ class Parser(object):
         self.error = False
         self.parser.parse(text)
 
-    def p_error(self, p):  # Syntax error handler
+    def p_error(self, p):
         if p:
             print(f"Syntax error at line {p.lineno}, column {self.scanner.find_tok_column(p)}:"
                   f"LexToken({p.type}, {p.value})")
@@ -50,7 +50,7 @@ class Parser(object):
             print("Unexpected end of input")
         self.error = True
 
-    def p_empty(self, p):  # Empty production
+    def p_empty(self, p):
         """empty :"""
         pass
 
@@ -74,20 +74,20 @@ class Parser(object):
                       | statement statements
         """
         if len(p) == 2:
-            p[0] = Statements()
+            p[0] = Statements([])
         elif len(p) == 3:
-            sts = p[2] if p[2] else Statements()
+            sts = p[2] if p[2] else Statements([])
             sts.statements = [p[1]] + sts.statements
             p[0] = sts
         else:
-            p[0] = p[2] if p[2] else Statements()
+            p[0] = Statements([p[2]]) if p[2] else Statements([])
 
     def p_block(self, p):
         """block : statement
                  | LCURLY statements RCURLY
         """
         if len(p) == 2:
-            p[0] = Statements([p[1]])
+            p[0] = p[1]
         else:
             p[0] = p[2]
 
@@ -101,11 +101,11 @@ class Parser(object):
                      | control_expression SEMICOL
         """
         if p[1] == "if":
-            p[0] = If(p[2], p[3]) if len(p) == 4 else If(p[2], p[3], p[5])
+            p[0] = If(p[2], Block(p[3])) if len(p) == 4 else If(p[2], Block(p[3]), Block(p[5]))
         elif p[1] == "while":
-            p[0] = While(p[2], p[3])
+            p[0] = While(p[2], Block(p[3]))
         elif p[1] == "for":
-            p[0] = For(p[2], p[3])
+            p[0] = For(p[2], Block(p[3]))
         elif p[1] == "print":
             p[0] = Print(p[2])
         else:  # assignment or control expression
@@ -145,15 +145,15 @@ class Parser(object):
 
     def p_variable_id(self, p):
         """variable : ID"""
-        p[0] = Variable(Id(p[1]), Id)
+        p[0] = Variable(Id(p[1]))
 
     def p_variable_uminus(self, p):
         """variable : SUB variable %prec UMINUS"""
-        p[0] = Variable(p[2].value, p[2].var_type, not p[2].minus, p[2].trans)
+        p[0] = Variable(p[2].value, not p[2].minus, p[2].trans)
 
     def p_variable_trans(self, p):
         """variable : variable TRANS"""
-        p[0] = Variable(p[1].value, p[1].var_type, p[1].minus, not p[1].trans)
+        p[0] = Variable(p[1].value, p[1].minus, not p[1].trans)
 
     def p_const(self, p):
         """const : STRING
@@ -164,7 +164,7 @@ class Parser(object):
 
     def p_for_expression(self, p):
         """ for_expression : ID ASSIGN variable RANGE variable"""
-        p[0] = ForExpr(p[1], p[3], p[5])
+        p[0] = ForExpr(Id(p[1]), p[3], p[5])
 
     def p_print_expression(self, p):
         """ print_expression : variable COMMA print_expression
@@ -179,7 +179,7 @@ class Parser(object):
     def p_control_expression(self, p):
         """control_expression : BREAK
                               | CONTINUE
-                              | RETURN variable
+                              | RETURN expression
         """
         if p[1] == "break":
             p[0] = Break()
@@ -193,9 +193,9 @@ class Parser(object):
                       | ID LBRACKET variable COMMA variable RBRACKET assign_op expression
         """
         if len(p) == 9:
-            p[0] = Assignment(p[1], p[7], p[8], (p[3], p[5]))
+            p[0] = Assignment(Id(p[1]), p[7], p[8], (p[3], p[5]))
         else:
-            p[0] = Assignment(p[1], p[2], p[3])
+            p[0] = Assignment(Id(p[1]), p[2], p[3])
 
     def p_assign_op(self, p):
         """assign_op : ASSIGN
@@ -241,7 +241,10 @@ class Parser(object):
 
     def p_elem(self, p):
         """elem : const
-                | ID
                 | vector
         """
         p[0] = p[1]
+
+    def p_elem_id(self, p):
+        """elem : ID"""
+        p[0] = Id(p[1])
