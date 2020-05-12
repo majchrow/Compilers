@@ -120,7 +120,7 @@ class TreePrinter:
 
     @addToClass(Id)
     def printTree(self, indent=0):
-        printWithIndent(self.value, indent-1)
+        printWithIndent(self.value, indent - 1)
 
     @addToClass(Block)
     def printTree(self, indent=0):
@@ -133,8 +133,3 @@ class TreePrinter:
         printWithIndent("RANGE", indent)
         self.start_var.printTree(indent + 1)
         self.end_var.printTree(indent + 1)
-
-    @addToClass(PrintExpr)
-    def printTree(self, indent=0):
-        for var in self.variables:
-            var.printTree(indent)

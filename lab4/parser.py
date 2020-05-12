@@ -16,15 +16,13 @@ class Parser(object):
     tokens = Scanner.tokens
 
     precedence = (
-        ('left', 'LCURLY', 'RCURLY'),
         ('nonassoc', 'IFX'),
         ('nonassoc', 'ELSE'),
-        ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
-        ('left', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET'),
-        ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
-        ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
-        ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('right', 'UMINUS'),
+        ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
+        ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
+        ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
+        ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
     )
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
@@ -96,8 +94,7 @@ class Parser(object):
                      | IF expression block ELSE block
                      | WHILE expression block
                      | FOR for_expression block
-                     | PRINT print_expression SEMICOL
-                     | assignment SEMICOL
+                     | PRINT expressions SEMICOL
                      | control_expression SEMICOL
         """
         if p[1] == "if":
@@ -108,8 +105,12 @@ class Parser(object):
             p[0] = For(p[2], Block(p[3]))
         elif p[1] == "print":
             p[0] = Print(p[2])
-        else:  # assignment or control expression
+        else:  # control expression
             p[0] = p[1]
+
+    def p_statement_assignments(self, p):
+        """statement : assignments SEMICOL"""
+        p[0] = Assignments(p[1])
 
     def p_expression(self, p):
         """expression : expression ADD expression
@@ -141,7 +142,7 @@ class Parser(object):
         """variable : const
                     | matrix
         """
-        p[0] = p[1]
+        p[0] = Variable(p[1])
 
     def p_variable_id(self, p):
         """variable : ID"""
@@ -163,23 +164,26 @@ class Parser(object):
         p[0] = Variable(p[1], type(p[1]))
 
     def p_for_expression(self, p):
-        """ for_expression : ID ASSIGN variable RANGE variable"""
+        """ for_expression : ID ASSIGN expression RANGE expression"""
         p[0] = ForExpr(Id(p[1]), p[3], p[5])
 
-    def p_print_expression(self, p):
-        """ print_expression : variable COMMA print_expression
-                             | variable
+    def p_expressions(self, p):
+        """ expressions : expression COMMA expressions
+                        | expression
         """
         if len(p) == 2:
-            p[0] = PrintExpr([p[1]])
+            p[0] = [p[1]]
         else:
-            p[3].variables = [p[1]] + p[3].variables
-            p[0] = p[3]
+            p[0] = [p[1]] + p[3]
+
+    def p_expressions_empty(self, p):
+        """ expressions : empty """
+        p[0] = []
 
     def p_control_expression(self, p):
         """control_expression : BREAK
                               | CONTINUE
-                              | RETURN expression
+                              | RETURN expressions
         """
         if p[1] == "break":
             p[0] = Break()
@@ -188,9 +192,22 @@ class Parser(object):
         else:  # RETURN
             p[0] = Return(p[2])
 
+    def p_assignments(self, p):
+        """assignments : assignment COMMA assignments
+                       | assignment
+        """
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = [p[1]] + p[3]
+
+    def p_assignments_empty(self, p):
+        """assignments : empty """
+        p[0] = []
+
     def p_assignment(self, p):
         """assignment : ID assign_op expression
-                      | ID LBRACKET variable COMMA variable RBRACKET assign_op expression
+                      | ID LBRACKET expression COMMA expression RBRACKET assign_op expression
         """
         if len(p) == 9:
             p[0] = Assignment(Id(p[1]), p[7], p[8], (p[3], p[5]))
@@ -207,9 +224,9 @@ class Parser(object):
         p[0] = p[1]
 
     def p_matrix_special(self, p):
-        """matrix : EYE LPAREN variable RPAREN
-                  | ZEROS LPAREN variable RPAREN
-                  | ONES LPAREN variable RPAREN
+        """matrix : EYE LPAREN expressions RPAREN
+                  | ZEROS LPAREN expressions RPAREN
+                  | ONES LPAREN expressions RPAREN
         """
         p[0] = SpecialMatrix(p[1], p[3])
 
@@ -238,6 +255,10 @@ class Parser(object):
             p[0] = [p[1]]
         else:
             p[0] = p[1] + [p[3]]
+
+    def p_innerlist_empty(self, p):
+        """inner_list : empty """
+        p[0] = []
 
     def p_elem(self, p):
         """elem : const

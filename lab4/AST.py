@@ -36,10 +36,10 @@ class Variable(Expr):
 
 
 class SpecialMatrix(Matrix):
-    def __init__(self, special: str, variable: Variable):
+    def __init__(self, special: str, expressions: List[Expr]):
         super().__init__()
         self.special = special
-        self.variable = variable
+        self.expressions = expressions
 
 
 class SimpleMatrix(Matrix):
@@ -70,24 +70,10 @@ class While(Statement):
 
 
 class ForExpr(Expr):
-    def __init__(self, for_id: Id, start_var: Variable, end_var: Variable):
+    def __init__(self, for_id: Id, start_expr: Expr, end_expr: Expr):
         self.for_id = for_id
-        self.start_var = start_var
-        self.end_var = end_var
-
-
-class PrintExpr(Expr):
-    def __init__(self, expressions: List[Expr]):
-        self.expressions = expressions
-
-
-# class ControlExpr(Expr):
-#     def __init__(self, variable: List[Variable]):
-#         self.variables = variable
-#
-#     def __str__(self):
-#         variables = "\n".join([var.__str__() for var in self.variables])
-#         return f"PrintExpr((variables, {variables}))"
+        self.start_expr = start_expr
+        self.end_expr = end_expr
 
 
 class For(Statement):
@@ -97,16 +83,21 @@ class For(Statement):
 
 
 class Print(Statement):
-    def __init__(self, print_expr: PrintExpr):
-        self.print_expr = print_expr
+    def __init__(self, expressions: List[Expr]):
+        self.expressions = expressions
 
 
-class Assignment(Statement):
-    def __init__(self, assign_id: Id, assign_op: str, variable: Variable, with_ref: Tuple[Variable, Variable] = None):
+class Assignment(AstNode):
+    def __init__(self, assign_id: Id, assign_op: str, expression: Expr, with_ref: Tuple[Expr, Expr] = None):
         self.assign_id = assign_id
         self.assign_op = assign_op
-        self.variable = variable
+        self.expression = expression
         self.with_ref = with_ref
+
+
+class Assignments(Statement):
+    def __init__(self, statements: List[Assignment]):
+        self.statements = statements
 
 
 class ControlExpr(Expr):
@@ -122,11 +113,8 @@ class Continue(ControlExpr):
 
 
 class Return(ControlExpr):
-    def __init__(self, expresion: Expr):
-        self.expresion = expresion
-
-    def __str__(self):
-        return f"Return((variable, {self.expresion}))"
+    def __init__(self, expressions: List[Expr]):
+        self.expressions = expressions
 
 
 class BinOp(Expr):
@@ -134,8 +122,3 @@ class BinOp(Expr):
         self.left_expr = left_expr
         self.bin_op = bin_op
         self.right_expr = right_expr
-
-    def __str__(self):
-        return f"BinOp((left_expr, {self.left_expr}), " \
-               f"(bin_op, {self.bin_op}), " \
-               f"(right_expr, {self.right_expr}))"

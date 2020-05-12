@@ -43,7 +43,6 @@ class TypeChecker(NodeVisitor):
                 self.visit(statement)
 
     def visit_Variable(self, node: Variable):
-        var_type = None
         if isinstance(node.value, Matrix):
             self.visit(node.value)
             var_type = type(Matrix)
@@ -51,6 +50,7 @@ class TypeChecker(NodeVisitor):
             try:
                 var_type = self.table.get(node.value.value)
             except KeyError:
+                var_type = None
                 print("id not defined in given scope")
         else:
             if node.trans:
@@ -92,9 +92,6 @@ class TypeChecker(NodeVisitor):
         self.visit(node.end_var)
         self.table.set_scope_name(scope)
 
-    def visit_PrintExpr(self, node: PrintExpr):
-        pass
-
     def visit_Return(self, node: Return):
         var_type = self.visit(node.expresion)
         if var_type != int:
@@ -105,7 +102,8 @@ class TypeChecker(NodeVisitor):
         self.visit(node.for_block)
 
     def visit_Print(self, node: Print):
-        self.visit(node.print_expr)
+        for expr in node.expressions:
+            self.visit(expr)
 
     def visit_Assignment(self, node: Assignment):
         var_type = self.visit(node.variable)
@@ -126,4 +124,3 @@ class TypeChecker(NodeVisitor):
             print(left_var_type, "!=", right_var_type)
             return None
         return left_var_type
-
