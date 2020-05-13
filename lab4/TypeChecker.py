@@ -6,8 +6,10 @@ class NodeVisitor(object):
 
     @staticmethod
     def _get_type(var):
+        if isinstance(var, Matrix):
+            return Matrix.__name__
         try:
-            return var.__name__
+            return type(var).__name__
         except:
             return None
 
@@ -54,33 +56,34 @@ class TypeChecker(NodeVisitor):
 
     def visit_Variable(self, node: Variable):
         if isinstance(node.value, Matrix):
-            var_type = self.visit(node.value)
+            var = self.visit(node.value)
         elif isinstance(node.value, Id):
             try:
-                var_type = self.table.get(node.value.value)
+                var = self.table.get(node.value.value)
             except KeyError:
-                var_type = None
+                var = None
                 self._wrap_with_lineno(node, f"NameError: {node.value.value} is not defined in given scope")
         else:
-            var_type = type(node.value)
+            var = node.value
 
-        if node.trans > 0 and var_type != Matrix:
-            self._wrap_with_lineno(node, f"TypeError: bad operand for unary ': {self._get_type(var_type)}")
+        if node.trans > 0 and not isinstance(var, Matrix):
+            self._wrap_with_lineno(node, f"TypeError: bad operand for unary ': {self._get_type(var)}")
 
-        if node.minus > 0 and var_type not in {float, int}:
-            self._wrap_with_lineno(node, f"TypeError: bad operand for unary -: {self._get_type(var_type)}")
+        if node.minus > 0 and type(var) not in {float, int}:
+            self._wrap_with_lineno(node, f"TypeError: bad operand for unary -: {self._get_type(var)}")
 
-        return var_type
+        return var
 
     def visit_SpecialMatrix(self, node: SpecialMatrix):
         if len(node.expressions) != 1:
             self._wrap_with_lineno(node, f"TypeError: expected 1 argument got {len(node.expressions)}")
             return None
-        var_type = self.visit(node.expressions[0])
-        if var_type != int:
+        var = self.visit(node.expressions[0])
+        if type(var) != int:
             self._wrap_with_lineno(node, f"TypeError: bad operand for {node.special}: {self._get_type(var_type)}")
             return None
-        return Matrix
+        node.shape = (var, var)
+        return node
 
     def visit_Assignments(self, node: Assignments):
         for assignment in node.assignments:  # One or multiple assignments separated by commas are allowed
@@ -113,7 +116,7 @@ class TypeChecker(NodeVisitor):
             return all(el == row_sizes[0] for el in row_sizes)
 
         vector = flatten(node.vector) if ';' not in node.vector else node.vector
-        if (len(vector) == len(get_indexes_of_semicolons(vector))):
+        if len(vector) == len(get_indexes_of_semicolons(vector)):
             self._wrap_with_lineno(node, "TypeError: matrix rows cannot be empty")
             return None
         if rows_have_same_size(vector):
@@ -122,10 +125,10 @@ class TypeChecker(NodeVisitor):
                     continue
                 if isinstance(el, Id):
                     try:
-                        var_type = self.table.get(el.value)
-                        if var_type not in {int, float}:
-                            self._wrap_with_lineno(node,
-                                                   f"TypeError: bad operand for matrix element: {self._get_type(var_type)}")
+                        var = self.table.get(el.value)
+                        if type(var) not in {int, float}:
+                            self._wrap_with_lineno(node, f"TypeError: bad operand for matrix element: "
+                                                         f"{self._get_type(var)}")
                             return None
                     except KeyError:
                         self._wrap_with_lineno(node, f"NameError: {el.value} is not defined in given scope")
@@ -136,34 +139,35 @@ class TypeChecker(NodeVisitor):
         else:
             self._wrap_with_lineno(node, "TypeError: matrix rows are not in the same size")
             return None
-        return Matrix
+        node.shape = (0, 0)
+        return node
 
     def visit_Block(self, node: Block):
         self.visit(node.statements)
 
     def visit_If(self, node: If):
-        var_type = self.visit(node.cond_expr)
-        if var_type != bool:
-            self._wrap_with_lineno(node, f"TypeError: boolean condition expected, got: {self._get_type(var_type)}")
+        var = self.visit(node.cond_expr)
+        if type(var) != bool:
+            self._wrap_with_lineno(node, f"TypeError: boolean condition expected, got: {self._get_type(var)}")
         self.visit(node.if_block)
         if node.else_block:
             self.visit(node.else_block)
 
     def visit_While(self, node: While):
         scope = self.table.set_scope_name(SCOPE.LOOP)
-        var_type = self.visit(node.cond_expr)
-        if var_type != bool:
-            self._wrap_with_lineno(node, f"TypeError: boolean condition expected, got: {self._get_type(var_type)}")
+        var = self.visit(node.cond_expr)
+        if type(var) != bool:
+            self._wrap_with_lineno(node, f"TypeError: boolean condition expected, got: {self._get_type(var)}")
         self.visit(node.while_block)
         self.table.set_scope_name(scope)
 
     def visit_ForExpr(self, node: ForExpr):
         scope = self.table.set_scope_name(SCOPE.LOOP)
-        var_start_type = self.visit(node.start_expr)
-        var_end_type = self.visit(node.end_expr)
-        if var_start_type != int and var_end_type != int:
+        var_start = self.visit(node.start_expr)
+        var_end = self.visit(node.end_expr)
+        if type(var_start) != int and type(var_end) != int:
             self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for iteration expression, got: "
-                                         f"{self._get_type(var_start_type)} and {self._get_type(var_end_type)}")
+                                         f"{self._get_type(var_start)} and {self._get_type(var_end)}")
             var_type = None
         else:
             var_type = int
@@ -175,9 +179,9 @@ class TypeChecker(NodeVisitor):
         if len(node.expressions) != 1:
             self._wrap_with_lineno(node, f"TypeError: expected 1 argument got {len(node.expressions)}")
             return
-        var_type = self.visit(node.expressions[0])
-        if var_type != int:
-            self._wrap_with_lineno(node, f"TypeError: bad operand for return: {self._get_type(var_type)}")
+        var = self.visit(node.expressions[0])
+        if type(var) != int:
+            self._wrap_with_lineno(node, f"TypeError: bad operand for return: {self._get_type(var)}")
 
     def visit_For(self, node: For):
         self.table.push_scope()  # push scope in case of shadowing variable there
@@ -195,7 +199,7 @@ class TypeChecker(NodeVisitor):
 
     def visit_Assignment(self, node: Assignment):
         ops = {'+=', '-=', '/=', '*='}
-        var_type = self.visit(node.expression)
+        var = self.visit(node.expression)
         if node.with_ref:
             try:
                 var_id = self.table.get(node.assign_id.value)
@@ -205,21 +209,21 @@ class TypeChecker(NodeVisitor):
             if node.assign_op != "=":
                 self._wrap_with_lineno(node, f"TypeError: unsupported operator reference assignment: {node.assign_op}")
             if len(node.with_ref) != 2:
-                self._wrap_with_lineno(node,
-                                       f"TypeError: expected 2 arguments for reference assignment, got: {len(node.with_ref)}")
-            if var_id != Matrix:
+                self._wrap_with_lineno(node, f"TypeError: expected 2 arguments for reference assignment,"
+                                             f" got: {len(node.with_ref)}")
+            if not isinstance(var_id, Matrix):
                 self._wrap_with_lineno(node,
                                        f"TypeError: reference only possible for Matrix, got: {self._get_type(var_id)}")
-            if var_type == Matrix:
+            if isinstance(var, Matrix):
                 self._wrap_with_lineno(node, f"TypeError: cannot assign Matrix with reference assignment")
             for refs in node.with_ref:
-                ref_type = self.visit(refs)
-                if ref_type not in {int, float}:
+                ref = self.visit(refs)
+                if type(ref) not in {int, float}:
                     self._wrap_with_lineno(node,
-                                           f"TypeError: wrong type for reference, got: {self._get_type(ref_type)}")
+                                           f"TypeError: wrong type for reference, got: {self._get_type(ref)}")
         else:
             if node.assign_op == "=":
-                self.table.put(node.assign_id.value, var_type)
+                self.table.put(node.assign_id.value, var)
             elif node.assign_op in ops:
                 try:
                     var_id = self.table.get(node.assign_id.value)
@@ -227,12 +231,13 @@ class TypeChecker(NodeVisitor):
                     var_id = None
                     self._wrap_with_lineno(node, f"NameError: {node.assign_id.value} is not defined in given scope")
 
-                if var_type not in {int, float, Matrix}:
+                if type(var) not in {int, float} and not isinstance(var, Matrix):
                     self._wrap_with_lineno(node,
-                                           f"TypeError: Unsupported operand type for {node.assign_op}: {self._get_type(var_type)}")
-                if var_id != var_id and var_id == Matrix or var_type == Matrix:
+                                           f"TypeError: Unsupported operand type for "
+                                           f"{node.assign_op}: {self._get_type(var)}")
+                if type(var_id) != type(var_id) and isinstance(var_id, Matrix) or isinstance(var, Matrix):
                     self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.assign_op}:"
-                                                 f" {self._get_type(var_id)} and {self._get_type(var_type)}")
+                                                 f" {self._get_type(var_id)} and {self._get_type(var)}")
             else:  # this code should be unreachable
                 self._wrap_with_lineno(node, f"SyntaxError: Unsupported operator {node.assign_op}")
 
@@ -248,28 +253,28 @@ class TypeChecker(NodeVisitor):
         number_ops = {'+', '-', '/', '*'}
         matrix_ops = {'.+', '.-', './', '.*'}
         boolean_ops = {'<', '>', '<=', '>=', '==', '!='}
-        left_var_type = self.visit(node.left_expr)
-        right_var_type = self.visit(node.right_expr)
+        left_var = self.visit(node.left_expr)
+        right_var = self.visit(node.right_expr)
 
         if node.bin_op in number_ops:
-            if left_var_type not in {int, float} or right_var_type not in {int, float}:
+            if type(left_var) not in {int, float} or type(right_var) not in {int, float}:
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
-                                             f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
+                                             f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = left_var_type and right_var_type  # int and float = float
+            var_type = left_var  # evaluate ...
         elif node.bin_op in boolean_ops:
-            if (left_var_type not in {int, float} and right_var_type not in {int, float}) \
-                    or left_var_type != right_var_type:
+            if (type(left_var) not in {int, float} and type(right_var) not in {int, float}) \
+                    or type(left_var) != type(right_var):
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
-                                             f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
+                                             f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = bool
+            var_type = True  # evaluate ...
         elif node.bin_op in matrix_ops:
-            if left_var_type != Matrix or right_var_type != Matrix:
+            if not isinstance(left_var, Matrix) or not isinstance(right_var, Matrix):
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
-                                             f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
+                                             f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = Matrix
+            var_type = left_var  # evaluate ...
         else:
             var_type = None
 

@@ -25,6 +25,7 @@ class Expr(AstNode):
 class Matrix(AstNode):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.shape = None
 
 
 class Id(AstNode):
