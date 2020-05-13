@@ -21,20 +21,19 @@ class NodeVisitor(object):
         return visitor(node)
 
     def generic_visit(self, node):  # Called if no explicit visitor function exists for a node.
-        print("FAILED")
-        print(node.__class__.__name__)
-        # if isinstance(node, list):
-        #     for elem in node:
-        #         self.visit(elem)
-        # else:
-        # else:
-        #     for child in node.children:
-        #         if isinstance(child, list):
-        #             for item in child:
-        #                 if isinstance(item, AstNode):
-        #                     self.visit(item)
-        #         elif isinstance(child, AstNode):
-        #             self.visit(child)
+        print("No visitor for node ", node.__class__.__name__)
+        if isinstance(node, list):
+            for elem in node:
+                self.visit(elem)
+        else:
+            children = getattr(node, 'children', [])
+            for child in children:
+                if isinstance(child, list):
+                    for item in child:
+                        if isinstance(item, AstNode):
+                            self.visit(item)
+                elif isinstance(child, AstNode):
+                    self.visit(child)
 
 
 class TypeChecker(NodeVisitor):
