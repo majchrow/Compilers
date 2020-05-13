@@ -4,6 +4,13 @@ from SymbolTable import *
 
 class NodeVisitor(object):
 
+    @staticmethod
+    def _get_type(var):
+        try:
+            return var.__name__
+        except:
+            return None
+
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
@@ -44,8 +51,7 @@ class TypeChecker(NodeVisitor):
 
     def visit_Variable(self, node: Variable):
         if isinstance(node.value, Matrix):
-            self.visit(node.value)
-            var_type = type(Matrix)
+            var_type = self.visit(node.value)
         elif isinstance(node.value, Id):
             try:
                 var_type = self.table.get(node.value.value)
@@ -55,11 +61,11 @@ class TypeChecker(NodeVisitor):
         else:
             var_type = type(node.value)
 
-        if node.trans > 0 and var_type != type(Matrix):
-            print(f"TypeError: bad operand for unary ': {var_type}")
+        if node.trans > 0 and var_type != Matrix:
+            print(f"TypeError: bad operand for unary ': {self._get_type(var_type)}")
 
         if node.minus > 0 and var_type not in {float, int}:
-            print(f"TypeError: bad operand for unary -: {var_type}")
+            print(f"TypeError: bad operand for unary -: {self._get_type(var_type)}")
 
         return var_type
 
@@ -69,9 +75,9 @@ class TypeChecker(NodeVisitor):
             return None
         var_type = self.visit(node.expressions[0])
         if var_type != int:
-            print(f"TypeError: bad operand for {node.special}: {var_type}")
+            print(f"TypeError: bad operand for {node.special}: {self._get_type(var_type)}")
             return None
-        return type(Matrix)
+        return Matrix
 
     def visit_Assignments(self, node: Assignments):
         for assignment in node.assignments:  # One or multiple assignments separated by commas are allowed
@@ -109,13 +115,14 @@ class TypeChecker(NodeVisitor):
                     try:
                         var_type = self.table.get(el.value)
                         if var_type not in {int, float}:
-                            print(f"TypeError: bad operand for matrix element: {var_type}")
+                            print(f"TypeError: bad operand for matrix element: {self._get_type(var_type)}")
                     except KeyError:
                         print(f"NameError: {el.value} is not defined in given scope")
                 if isinstance(el, list):
                     print("TypeError: bad ?")
         else:
             print("TypeError: matrix rows are not in the same size")
+        return Matrix
 
     def visit_Block(self, node: Block):
         self.visit(node.statements)
@@ -123,7 +130,7 @@ class TypeChecker(NodeVisitor):
     def visit_If(self, node: If):
         var_type = self.visit(node.cond_expr)
         if var_type != bool:
-            print(f"TypeError: boolean condition expected, got: {var_type}")
+            print(f"TypeError: boolean condition expected, got: {self._get_type(var_type)}")
         self.visit(node.if_block)
         if node.else_block:
             self.visit(node.else_block)
@@ -132,7 +139,7 @@ class TypeChecker(NodeVisitor):
         scope = self.table.set_scope_name(SCOPE.LOOP)
         var_type = self.visit(node.cond_expr)
         if var_type != bool:
-            print(f"TypeError: boolean condition expected, got: {var_type}")
+            print(f"TypeError: boolean condition expected, got: {self._get_type(var_type)}")
         self.visit(node.while_block)
         self.table.set_scope_name(scope)
 
@@ -142,7 +149,7 @@ class TypeChecker(NodeVisitor):
         var_end_type = self.visit(node.end_expr)
         if var_start_type != int and var_end_type != int:
             print(f"TypeError: Unsupported operand types for iteration expression, got: "
-                  f"{var_start_type} and {var_end_type}")
+                  f"{self._get_type(var_start_type)} and {self._get_type(var_end_type)}")
             var_type = None
         else:
             var_type = int
@@ -156,7 +163,7 @@ class TypeChecker(NodeVisitor):
             return
         var_type = self.visit(node.expressions[0])
         if var_type != int:
-            print(f"TypeError: bad operand for return: {var_type}")
+            print(f"TypeError: bad operand for return: {self._get_type(var_type)}")
 
     def visit_For(self, node: For):
         self.table.push_scope()  # push scope in case of shadowing variable there
@@ -194,21 +201,21 @@ class TypeChecker(NodeVisitor):
         if node.bin_op in number_ops:
             if left_var_type not in {int, float} or right_var_type not in {int, float}:
                 print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
-                      f"{left_var_type} and {right_var_type}")
+                      f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
             var_type = left_var_type and right_var_type  # int and float = float
         elif node.bin_op in boolean_ops:
             if left_var_type != bool or right_var_type != bool:
                 print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
-                      f"{left_var_type} and {right_var_type}")
+                      f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
             var_type = bool
         elif node.bin_op in matrix_ops:
-            if left_var_type != type(Matrix) or right_var_type != type(Matrix):
+            if left_var_type != Matrix or right_var_type != Matrix:
                 print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
-                      f"{left_var_type} and {right_var_type}")
+                      f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
-            var_type = type(Matrix)
+            var_type = Matrix
         else:
             var_type = None
 
