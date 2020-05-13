@@ -34,17 +34,19 @@ class TypeChecker(NodeVisitor):
     @staticmethod
     def flatten(matrix):
         new_matrix = []
+        last = len(matrix)-1
         
-        for vector in matrix:
+        for i,vector in enumerate(matrix):
             print(vector)
             if not isinstance(vector, list):
-                return None
+                new_matrix.append(vector)
             else:
                 for el in vector:
                     new_matrix.append(el)
+            if i != last:    
                 new_matrix.append(';')
         
-        return matrix
+        return new_matrix
 
     @staticmethod
     def rows_have_same_size(vector):
@@ -99,24 +101,21 @@ class TypeChecker(NodeVisitor):
 
     def visit_SimpleMatrix(self, node: SimpleMatrix):
         vector = self.flatten(node.vector) if ';' not in node.vector else node.vector 
-        if vector:
-            if self.rows_have_same_size(vector):
-                for el in vector:
-                    if el == ';':
-                        continue
-                    if isinstance(el, str):
-                        try:
-                            symbol = self.table.get(el)
-                            if symbol.sym_type not in (int, float):
-                                print("TypeError")
-                        except KeyError:
-                            print("id not defined in given scope")
-                    if isinstance(el, list):
-                        print("TypeError")
-            else:
-                print("Rows have different sizes")
+        if self.rows_have_same_size(vector):
+            for el in vector:
+                if el == ';':
+                    continue
+                if isinstance(el, Id):
+                    try:
+                        symbol = self.table.get(el.value)
+                        if symbol.sym_type not in (int, float):
+                            print("TypeError")
+                    except KeyError:
+                        print("id not defined in given scope")
+                if isinstance(el, list):
+                    print("TypeError")
         else:
-            print("Invalid matrix format")
+            print("Rows have different sizes")
 
     def visit_Block(self, node: Block):
         self.visit(node.statements)  # just propagate, scope will if block is within scope it will be done by Statements
