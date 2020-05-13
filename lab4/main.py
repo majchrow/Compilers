@@ -15,15 +15,15 @@ def create_parser():
         required=True
     )
     parser.add_argument(
-        '--ast',
+        '--disable_ast',
         help='Perform ast printing',
         action='store_true',
         default=False)
     parser.add_argument(
-        '--type_check',
+        '--disable_type_check',
         help='Perform type checking',
         action='store_true',
-        default=True)
+        default=False)
 
     return parser
 
@@ -42,4 +42,4 @@ if __name__ == '__main__':
         sys.exit(0)
     parser = Parser()
     text = file.read()
-    parser.parse(text, ast=FLAGS.ast, type_check=FLAGS.type_check)
+    parser.parse(text, ast=not FLAGS.disable_ast, type_check=not FLAGS.disable_type_check)

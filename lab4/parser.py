@@ -18,12 +18,12 @@ class Parser(object):
     precedence = (
         ('nonassoc', 'IFX'),
         ('nonassoc', 'ELSE'),
-        ('right', 'UMINUS'),
-        ('left', 'TRANS'),
+        ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
+        ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
         ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
-        ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
-        ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
+        ('left', 'TRANS'),
+        ('right', 'UMINUS'),
     )
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):

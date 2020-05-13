@@ -5,7 +5,7 @@ from SymbolTable import *
 class NodeVisitor(object):
 
     @staticmethod
-    def _get_type(var):
+    def _get_type(var: any):
         if isinstance(var, Matrix):
             return Matrix.__name__
         try:
@@ -14,15 +14,22 @@ class NodeVisitor(object):
             return None
 
     @staticmethod
-    def _wrap_with_lineno(node, msg):
+    def _get_shape(var: Matrix):
+        try:
+            return var.shape
+        except:
+            return (-1, -1)
+
+    @staticmethod
+    def _wrap_with_lineno(node: AstNode, msg: str):
         print(f"Line {node.lineno}, {msg}")
 
-    def visit(self, node):
+    def visit(self, node: AstNode):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
 
-    def generic_visit(self, node):  # Called if no explicit visitor function exists for a node.
+    def generic_visit(self, node: AstNode):  # Called if no explicit visitor function exists for a node.
         print("No visitor for node ", node.__class__.__name__)
         if isinstance(node, list):
             for elem in node:
@@ -82,6 +89,12 @@ class TypeChecker(NodeVisitor):
         if type(var) != int:
             self._wrap_with_lineno(node, f"TypeError: bad operand for {node.special}: {self._get_type(var)}")
             return None
+
+        if var <= 0:
+            self._wrap_with_lineno(node, f"ValueError: expected non-negative argument for {node.special} "
+                                         f"got: {var}")
+            return None
+
         node.shape = (var, var)
         return node
 
@@ -128,7 +141,7 @@ class TypeChecker(NodeVisitor):
                 if isinstance(el, Id):
                     try:
                         var = self.table.get(el.value)
-                        if type(var) not in {int, float}:
+                        if type(var) not in {int, float, str}:
                             self._wrap_with_lineno(node, f"TypeError: bad operand for matrix element: "
                                                          f"{self._get_type(var)}")
                             return None
@@ -263,20 +276,35 @@ class TypeChecker(NodeVisitor):
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                                              f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = left_var  # evaluate ...
+            if node.bin_op == '+':  # Evaluating needed for shape checking in case of 'eye(2+2) .+ eye(3-1)' etc.
+                var_type = left_var + right_var
+            elif node.bin_op == '-':
+                var_type = left_var - right_var
+            elif node.bin_op == '*':
+                var_type = left_var * right_var
+            else:
+                if right_var == 0:
+                    self._wrap_with_lineno(node, f"ZeroDivisionError: division by zero : "
+                                                 f"{self._get_type(left_var)} / {self._get_type(right_var)}")
+                    return None
+                var_type = left_var / right_var
         elif node.bin_op in boolean_ops:
             if (type(left_var) not in {int, float} and type(right_var) not in {int, float}) \
                     or type(left_var) != type(right_var):
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                                              f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = True  # evaluate ...
+            return True  # Evaluation not needed for type_checking
+
         elif node.bin_op in matrix_ops:
             if not isinstance(left_var, Matrix) or not isinstance(right_var, Matrix):
                 self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                                              f"{self._get_type(left_var)} and {self._get_type(right_var)}")
                 return None
-            var_type = left_var  # evaluate ...
+            if left_var.shape != right_var.shape:
+                self._wrap_with_lineno(node, f"TypeError: Unsupported operand matrix shapes for {node.bin_op}, got: "
+                                             f"{self._get_shape(left_var)} and {self._get_shape(right_var)}")
+            var_type = left_var  # Evaluation not needed for type_checking
         else:
             var_type = None
 
