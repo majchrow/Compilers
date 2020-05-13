@@ -2,7 +2,7 @@ from copy import deepcopy
 from enum import Enum
 
 
-class SCOPE(Enum):
+class SCOPE(Enum):  # for now we care only if we are inside LOOP or not there
     GLOBAL = 1
     LOCAL = 2
     LOOP = 3
