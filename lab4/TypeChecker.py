@@ -31,6 +31,29 @@ class TypeChecker(NodeVisitor):
     def __init__(self):
         self.table = SymbolTable()
 
+    @staticmethod
+    def flatten(matrix):
+        new_matrix = []
+        
+        for vector in matrix:
+            print(vector)
+            if not isinstance(vector, list):
+                return None
+            else:
+                for el in vector:
+                    new_matrix.append(el)
+                new_matrix.append(';')
+        
+        return matrix
+
+    @staticmethod
+    def rows_have_same_size(vector):
+        semicolons = [i for i, el in enumerate(vector) if el == ';']
+        semicolons = semicolons + [len(vector)]
+        tmp = [0] + list(map(lambda x: x+1, semicolons[:-1]))
+        row_sizes = [i - j for i, j in zip(semicolons, tmp)]
+        return all(el == row_sizes[0] for el in row_sizes)
+
     def visit_Statements(self, node: Statements):
         for statement in node.statements:
             if isinstance(statement, Statements):
@@ -75,8 +98,25 @@ class TypeChecker(NodeVisitor):
             self.visit(assignment)
 
     def visit_SimpleMatrix(self, node: SimpleMatrix):
-        pass
-        # Type checking here
+        vector = self.flatten(node.vector) if ';' not in node.vector else node.vector 
+        if vector:
+            if self.rows_have_same_size(vector):
+                for el in vector:
+                    if el == ';':
+                        continue
+                    if isinstance(el, str):
+                        try:
+                            symbol = self.table.get(el)
+                            if symbol.sym_type not in (int, float):
+                                print("TypeError")
+                        except KeyError:
+                            print("id not defined in given scope")
+                    if isinstance(el, list):
+                        print("TypeError")
+            else:
+                print("Rows have different sizes")
+        else:
+            print("Invalid matrix format")
 
     def visit_Block(self, node: Block):
         self.visit(node.statements)  # just propagate, scope will if block is within scope it will be done by Statements
