@@ -29,7 +29,7 @@ class Id:
 
 class Variable(Expr):
     def __init__(self, value: Union[str, int, float, Matrix, Id],
-                 minus: bool = False, trans: bool = False):
+                 minus: int = 0, trans: int = 0):
         self.value = value
         self.minus = minus
         self.trans = trans

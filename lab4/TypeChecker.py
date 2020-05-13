@@ -55,10 +55,10 @@ class TypeChecker(NodeVisitor):
         else:
             var_type = type(node.value)
 
-        if node.trans and var_type != type(Matrix):
+        if node.trans > 0 and var_type != type(Matrix):
             print(f"TypeError: bad operand for unary ': {var_type}")
 
-        if node.minus and var_type not in {float, int}:
+        if node.minus > 0 and var_type not in {float, int}:
             print(f"TypeError: bad operand for unary -: {var_type}")
 
         return var_type

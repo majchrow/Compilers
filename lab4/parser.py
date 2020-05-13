@@ -19,6 +19,7 @@ class Parser(object):
         ('nonassoc', 'IFX'),
         ('nonassoc', 'ELSE'),
         ('right', 'UMINUS'),
+        ('left', 'TRANS'),
         ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
         ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
@@ -153,11 +154,11 @@ class Parser(object):
 
     def p_variable_uminus(self, p):
         """variable : SUB variable %prec UMINUS"""
-        p[0] = Variable(p[2].value, not p[2].minus, p[2].trans)
+        p[0] = Variable(p[2].value, p[2].minus + 1, p[2].trans)
 
     def p_variable_trans(self, p):
         """variable : variable TRANS"""
-        p[0] = Variable(p[1].value, p[1].minus, not p[1].trans)
+        p[0] = Variable(p[1].value, p[1].minus, p[1].trans + 1)
 
     def p_const(self, p):
         """const : STRING
