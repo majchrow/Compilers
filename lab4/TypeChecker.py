@@ -80,7 +80,7 @@ class TypeChecker(NodeVisitor):
             return None
         var = self.visit(node.expressions[0])
         if type(var) != int:
-            self._wrap_with_lineno(node, f"TypeError: bad operand for {node.special}: {self._get_type(var_type)}")
+            self._wrap_with_lineno(node, f"TypeError: bad operand for {node.special}: {self._get_type(var)}")
             return None
         node.shape = (var, var)
         return node
@@ -113,13 +113,15 @@ class TypeChecker(NodeVisitor):
             semicolons = semicolons + [len(vector)]
             tmp = [0] + list(map(lambda x: x + 1, semicolons[:-1]))
             row_sizes = [i - j for i, j in zip(semicolons, tmp)]
-            return all(el == row_sizes[0] for el in row_sizes)
+            shape = len(row_sizes), row_sizes[0]
+            return all(el == row_sizes[0] for el in row_sizes), shape
 
         vector = flatten(node.vector) if ';' not in node.vector else node.vector
         if len(vector) == len(get_indexes_of_semicolons(vector)):
             self._wrap_with_lineno(node, "TypeError: matrix rows cannot be empty")
             return None
-        if rows_have_same_size(vector):
+        same_size, shape = rows_have_same_size(vector)
+        if same_size:
             for el in vector:
                 if el == ';':
                     continue
@@ -139,7 +141,7 @@ class TypeChecker(NodeVisitor):
         else:
             self._wrap_with_lineno(node, "TypeError: matrix rows are not in the same size")
             return None
-        node.shape = (0, 0)
+        node.shape = shape
         return node
 
     def visit_Block(self, node: Block):
