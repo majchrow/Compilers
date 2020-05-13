@@ -46,19 +46,25 @@ class TreePrinter:
     @addToClass(Print)
     def printTree(self, indent=0):
         printWithIndent("PRINT", indent)
-        self.print_expr.printTree(indent + 1)
+        for expression in self.expressions:
+            expression.printTree(indent + 1)
 
     @addToClass(Assignment)
     def printTree(self, indent=0):
         printWithIndent(self.assign_op, indent)
         if self.with_ref:
             printWithIndent("REF", indent + 1)
-            printWithIndent(self.assign_id, indent + 2)
+            self.assign_id.printTree(indent + 2)
             self.with_ref[0].printTree(indent + 2)
             self.with_ref[1].printTree(indent + 2)
         else:
-            printWithIndent(self.assign_id, indent + 1)
-        self.variable.printTree(indent + 1)
+            self.assign_id.printTree(indent + 2)
+        self.expression.printTree(indent + 1)
+
+    @addToClass(Assignments)
+    def printTree(self, indent=0):
+        for assignment in self.assignments:
+            assignment.printTree(indent)
 
     @addToClass(Break)
     def printTree(self, indent=0):
@@ -71,7 +77,8 @@ class TreePrinter:
     @addToClass(Return)
     def printTree(self, indent=0):
         printWithIndent("RETURN", indent)
-        self.variable.printTree(indent + 1)
+        for expression in self.expressions:
+            expression.printTree(indent + 1)
 
     @addToClass(Statements)
     def printTree(self, indent=0):
@@ -81,11 +88,13 @@ class TreePrinter:
     @addToClass(Variable)
     def printTree(self, indent=0):
         if self.minus:
-            printWithIndent("MINUS", indent)
-            indent += 1
+            for i in range(self.minus):
+                printWithIndent("MINUS", indent+i)
+            indent += self.minus
         if self.trans:
-            printWithIndent("TRANSPOSE", indent)
-            indent += 1
+            for i in range(self.trans):
+                printWithIndent("TRANSPOSE", indent+i)
+            indent += self.trans
         try:  # for example X = -ones(3)'
             self.value.printTree(indent + 1)
         except AttributeError:
@@ -100,7 +109,8 @@ class TreePrinter:
     @addToClass(SpecialMatrix)
     def printTree(self, indent=0):
         printWithIndent(self.special, indent)
-        self.variable.printTree(indent + 1)
+        for expression in self.expressions:
+            expression.printTree(indent + 1)
 
     @addToClass(SimpleMatrix)
     def printTree(self, indent=0):
@@ -112,8 +122,13 @@ class TreePrinter:
                     print_vector(elem, indent)
                 elif elem == ';':
                     printWithIndent("SEMICOL", indent)
+                elif (type(elem) is float or type(elem) is int or type(elem) is str):
+                    printWithIndent(elem, indent)
                 else:
-                    elem.printTree(indent)
+                    if isinstance(elem, Id):
+                        elem.printTree(indent+1)
+                    else:
+                        elem.printTree(indent+1)
 
         vec = self.vector
         print_vector(vec, indent)
@@ -124,12 +139,14 @@ class TreePrinter:
 
     @addToClass(Block)
     def printTree(self, indent=0):
-        for statement in self.statements:
-            statement.printTree(indent)
+        if isinstance(self.statements, Statements):
+            self.statements.printTree(indent+1)
+        else:
+            self.statements.printTree(indent)
 
     @addToClass(ForExpr)
     def printTree(self, indent=0):
-        printWithIndent(self.for_id, indent)
+        self.for_id.printTree(indent)
         printWithIndent("RANGE", indent)
-        self.start_var.printTree(indent + 1)
-        self.end_var.printTree(indent + 1)
+        self.start_expr.printTree(indent + 1)
+        self.end_expr.printTree(indent + 1)

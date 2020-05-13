@@ -99,14 +99,20 @@ class TypeChecker(NodeVisitor):
 
             return new_matrix
 
+        def get_indexes_of_semicolons(vector):
+            return [i for i, el in enumerate(vector) if el == ';']
+
         def rows_have_same_size(vector):
-            semicolons = [i for i, el in enumerate(vector) if el == ';']
+            semicolons = get_indexes_of_semicolons(vector)
             semicolons = semicolons + [len(vector)]
             tmp = [0] + list(map(lambda x: x + 1, semicolons[:-1]))
             row_sizes = [i - j for i, j in zip(semicolons, tmp)]
             return all(el == row_sizes[0] for el in row_sizes)
 
         vector = flatten(node.vector) if ';' not in node.vector else node.vector
+        if (len(vector) == len(get_indexes_of_semicolons(vector))):
+            print("TypeError: matrix rows cannot be empty")    
+            return None
         if rows_have_same_size(vector):
             for el in vector:
                 if el == ';':
@@ -116,12 +122,16 @@ class TypeChecker(NodeVisitor):
                         var_type = self.table.get(el.value)
                         if var_type not in {int, float}:
                             print(f"TypeError: bad operand for matrix element: {self._get_type(var_type)}")
+                            return None
                     except KeyError:
                         print(f"NameError: {el.value} is not defined in given scope")
+                        return None
                 if isinstance(el, list):
-                    print("TypeError: bad ?")
+                    print("TypeError: matrix element cannot be a list")
+                    return None
         else:
             print("TypeError: matrix rows are not in the same size")
+            return None
         return Matrix
 
     def visit_Block(self, node: Block):
