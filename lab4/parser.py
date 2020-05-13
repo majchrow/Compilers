@@ -102,19 +102,20 @@ class Parser(object):
                      | control_expression SEMICOL
         """
         if p[1] == "if":
-            p[0] = If(p[2], Block(p[3])) if len(p) == 4 else If(p[2], Block(p[3]), Block(p[5]))
+            p[0] = If(p[2], Block(p[3])) if len(p) == 4 else If(p[2], Block(p[3]), Block(p[5]),
+                                                                lineno=self.scanner.lexer.lineno)
         elif p[1] == "while":
-            p[0] = While(p[2], Block(p[3]))
+            p[0] = While(p[2], Block(p[3]), lineno=self.scanner.lexer.lineno)
         elif p[1] == "for":
-            p[0] = For(p[2], Block(p[3]))
+            p[0] = For(p[2], Block(p[3]), lineno=self.scanner.lexer.lineno)
         elif p[1] == "print":
-            p[0] = Print(p[2])
+            p[0] = Print(p[2], lineno=self.scanner.lexer.lineno)
         else:  # control expression
             p[0] = p[1]
 
     def p_statement_assignments(self, p):
         """statement : assignments SEMICOL"""
-        p[0] = Assignments(p[1])
+        p[0] = Assignments(p[1], lineno=self.scanner.lexer.lineno)
 
     def p_expression(self, p):
         """expression : expression ADD expression
@@ -132,7 +133,7 @@ class Parser(object):
                       | expression EQ expression
                       | expression NEQ expression
         """
-        p[0] = BinOp(p[1], p[2], p[3])
+        p[0] = BinOp(p[1], p[2], p[3], lineno=self.scanner.lexer.lineno)
 
     def p_expression_group(self, p):
         """expression : LPAREN expression RPAREN"""
@@ -146,19 +147,19 @@ class Parser(object):
         """variable : const
                     | matrix
         """
-        p[0] = Variable(p[1])
+        p[0] = Variable(p[1], lineno=self.scanner.lexer.lineno)
 
     def p_variable_id(self, p):
         """variable : ID"""
-        p[0] = Variable(Id(p[1]))
+        p[0] = Variable(Id(p[1]), lineno=self.scanner.lexer.lineno)
 
     def p_variable_uminus(self, p):
         """variable : SUB variable %prec UMINUS"""
-        p[0] = Variable(p[2].value, p[2].minus + 1, p[2].trans)
+        p[0] = Variable(p[2].value, p[2].minus + 1, p[2].trans, lineno=self.scanner.lexer.lineno)
 
     def p_variable_trans(self, p):
         """variable : variable TRANS"""
-        p[0] = Variable(p[1].value, p[1].minus, p[1].trans + 1)
+        p[0] = Variable(p[1].value, p[1].minus, p[1].trans + 1, lineno=self.scanner.lexer.lineno)
 
     def p_const(self, p):
         """const : STRING
@@ -169,7 +170,7 @@ class Parser(object):
 
     def p_for_expression(self, p):
         """ for_expression : ID ASSIGN expression RANGE expression"""
-        p[0] = ForExpr(Id(p[1]), p[3], p[5])
+        p[0] = ForExpr(Id(p[1]), p[3], p[5], lineno=self.scanner.lexer.lineno)
 
     def p_expressions(self, p):
         """ expressions : expression COMMA expressions
@@ -190,11 +191,11 @@ class Parser(object):
                               | RETURN expressions
         """
         if p[1] == "break":
-            p[0] = Break()
+            p[0] = Break(lineno=self.scanner.lexer.lineno)
         elif p[1] == "continue":
-            p[0] = Continue()
+            p[0] = Continue(lineno=self.scanner.lexer.lineno)
         else:  # RETURN
-            p[0] = Return(p[2])
+            p[0] = Return(p[2], lineno=self.scanner.lexer.lineno)
 
     def p_assignments(self, p):
         """assignments : assignment COMMA assignments
@@ -214,9 +215,9 @@ class Parser(object):
                       | ID LBRACKET expressions RBRACKET assign_op expression
         """
         if len(p) == 7:
-            p[0] = Assignment(Id(p[1]), p[5], p[6], p[3])
+            p[0] = Assignment(Id(p[1]), p[5], p[6], p[3], lineno=self.scanner.lexer.lineno)
         else:
-            p[0] = Assignment(Id(p[1]), p[2], p[3])
+            p[0] = Assignment(Id(p[1]), p[2], p[3], lineno=self.scanner.lexer.lineno)
 
     def p_assign_op(self, p):
         """assign_op : ASSIGN
@@ -232,11 +233,11 @@ class Parser(object):
                   | ZEROS LPAREN expressions RPAREN
                   | ONES LPAREN expressions RPAREN
         """
-        p[0] = SpecialMatrix(p[1], p[3])
+        p[0] = SpecialMatrix(p[1], p[3], lineno=self.scanner.lexer.lineno)
 
     def p_matrix(self, p):
         """matrix : vector"""
-        p[0] = SimpleMatrix(p[1])
+        p[0] = SimpleMatrix(p[1], lineno=self.scanner.lexer.lineno)
 
     def p_vector(self, p):
         """vector : LBRACKET outer_list RBRACKET"""
@@ -272,4 +273,4 @@ class Parser(object):
 
     def p_elem_id(self, p):
         """elem : ID"""
-        p[0] = Id(p[1])
+        p[0] = Id(p[1], lineno=self.scanner.lexer.lineno)
