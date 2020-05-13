@@ -175,13 +175,30 @@ class TypeChecker(NodeVisitor):
 
     def visit_Print(self, node: Print):
         if len(node.expressions) == 0:
-            print(f"TypeError: expected at least 1 for Print statement")
+            print(f"TypeError: expected at least 1 argument for Print statement")
         for expr in node.expressions:
             self.visit(expr)
 
     def visit_Assignment(self, node: Assignment):
+        ops = {'+=', '-=', '/=', '*='}
         var_type = self.visit(node.expression)
-        self.table.put(node.assign_id.value, var_type)
+        if node.assign_op == "=":
+            self.table.put(node.assign_id.value, var_type)
+        elif node.assign_op in ops:
+            try:
+                var_id = self.table.get(node.assign_id.value)
+            except:
+                print(f"NameError: {node.assign_id.value} is not defined in given scope")
+                return None
+            if var_type not in {int, float, Matrix}:
+                print(f"TypeError: Unsupported operand type for {node.assign_op}: {self._get_type(var_type)}")
+                return None
+            if var_id != var_id and var_id == Matrix or var_type == Matrix:
+                print(f"TypeError: Unsupported operand types for {node.assign_op}:"
+                      f" {self._get_type(var_id)} and {self._get_type(var_type)}")
+                return None
+        else:  # this code should be unreachable
+            print(f"SyntaxError: Unsupported operator {node.assign_op}")
 
     def visit_Break(self, node: Break):
         if self.table.current_scope_name != SCOPE.LOOP:
@@ -200,19 +217,20 @@ class TypeChecker(NodeVisitor):
 
         if node.bin_op in number_ops:
             if left_var_type not in {int, float} or right_var_type not in {int, float}:
-                print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
+                print(f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                       f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
             var_type = left_var_type and right_var_type  # int and float = float
         elif node.bin_op in boolean_ops:
-            if left_var_type != bool or right_var_type != bool:
-                print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
+            if (left_var_type not in {int, float} and right_var_type not in {int, float}) \
+                    or left_var_type != right_var_type:
+                print(f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                       f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
             var_type = bool
         elif node.bin_op in matrix_ops:
             if left_var_type != Matrix or right_var_type != Matrix:
-                print(f"TypeError: Unsupported operand type for {node.bin_op}, got: "
+                print(f"TypeError: Unsupported operand types for {node.bin_op}, got: "
                       f"{self._get_type(left_var_type)} and {self._get_type(right_var_type)}")
                 return None
             var_type = Matrix
