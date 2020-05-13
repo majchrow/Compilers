@@ -1,13 +1,39 @@
-import sys
+import argparse
 import os
+import sys
+
 from parser import Parser
 
+
+def create_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '--filename',
+        help='File to perform parsing',
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        '--ast',
+        help='Perform ast printing',
+        action='store_true',
+        default=False)
+    parser.add_argument(
+        '--type_check',
+        help='Perform type checking',
+        action='store_true',
+        default=True)
+
+    return parser
+
+
 if __name__ == '__main__':
-    filename = sys.argv[1] if len(sys.argv) > 1 else "example1.m"
+    FLAGS = create_parser().parse_args()
     try:
-        file = open(filename, "r")
+        file = open(FLAGS.filename, "r")
     except IOError:
-        print(f"Cannot open {filename} file")
+        print(f"Cannot open {FLAGS.filename} file")
         sys.exit(0)
     try:
         import TreePrinter  # Add printTree to AST class dynamically
@@ -16,4 +42,4 @@ if __name__ == '__main__':
         sys.exit(0)
     parser = Parser()
     text = file.read()
-    parser.parse(text, ast=False, type_check=True)
+    parser.parse(text, ast=FLAGS.ast, type_check=FLAGS.type_check)
