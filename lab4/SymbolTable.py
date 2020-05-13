@@ -8,23 +8,11 @@ class SCOPE(Enum):
     LOOP = 3
 
 
-class Symbol(object):
-    def __init__(self, name, sym_type):
-        self.name = name
-        self.sym_type = sym_type
-
-
-class VariableSymbol(Symbol):
-
-    def __init__(self, name, sym_type):
-        super().__init__(name, sym_type)
-
-
 class SymbolTable(object):
 
     def __init__(self):
         self.current_scope_name = SCOPE.GLOBAL
-        self.current_scope = {}
+        self.current_scope = {}  # ID:str -> type mapping with scope distinction
         self.scopes = []
 
     def set_scope_name(self, scope: SCOPE):
@@ -35,7 +23,7 @@ class SymbolTable(object):
     def get_scope_name(self):
         return self.current_scope_name
 
-    def put(self, name: str, symbol: Symbol):
+    def put(self, name: str, symbol: any):
         self.current_scope[name] = symbol
 
     def get(self, name: str):
