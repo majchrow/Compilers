@@ -192,23 +192,41 @@ class TypeChecker(NodeVisitor):
     def visit_Assignment(self, node: Assignment):
         ops = {'+=', '-=', '/=', '*='}
         var_type = self.visit(node.expression)
-        if node.assign_op == "=":
-            self.table.put(node.assign_id.value, var_type)
-        elif node.assign_op in ops:
+        if node.with_ref:
             try:
                 var_id = self.table.get(node.assign_id.value)
             except:
+                var_id = None
                 print(f"NameError: {node.assign_id.value} is not defined in given scope")
-                return None
-            if var_type not in {int, float, Matrix}:
-                print(f"TypeError: Unsupported operand type for {node.assign_op}: {self._get_type(var_type)}")
-                return None
-            if var_id != var_id and var_id == Matrix or var_type == Matrix:
-                print(f"TypeError: Unsupported operand types for {node.assign_op}:"
-                      f" {self._get_type(var_id)} and {self._get_type(var_type)}")
-                return None
-        else:  # this code should be unreachable
-            print(f"SyntaxError: Unsupported operator {node.assign_op}")
+            if node.assign_op != "=":
+                print(f"TypeError: unsupported operator reference assignment: {node.assign_op}")
+            if len(node.with_ref) != 2:
+                print(f"TypeError: expected 2 arguments for reference assignment, got: {len(node.with_ref)}")
+            if var_id != Matrix:
+                print(f"TypeError: reference only possible for Matrix, got: {self._get_type(var_id)}")
+            if var_type == Matrix:
+                print(f"TypeError: cannot assign Matrix with reference assignment")
+            for refs in node.with_ref:
+                ref_type = self.visit(refs)
+                if ref_type not in {int, float}:
+                    print(f"TypeError: wrong type for reference, got: {self._get_type(ref_type)}")
+        else:
+            if node.assign_op == "=":
+                self.table.put(node.assign_id.value, var_type)
+            elif node.assign_op in ops:
+                try:
+                    var_id = self.table.get(node.assign_id.value)
+                except:
+                    var_id = None
+                    print(f"NameError: {node.assign_id.value} is not defined in given scope")
+
+                if var_type not in {int, float, Matrix}:
+                    print(f"TypeError: Unsupported operand type for {node.assign_op}: {self._get_type(var_type)}")
+                if var_id != var_id and var_id == Matrix or var_type == Matrix:
+                    print(f"TypeError: Unsupported operand types for {node.assign_op}:"
+                          f" {self._get_type(var_id)} and {self._get_type(var_type)}")
+            else:  # this code should be unreachable
+                print(f"SyntaxError: Unsupported operator {node.assign_op}")
 
     def visit_Break(self, node: Break):
         if self.table.current_scope_name != SCOPE.LOOP:

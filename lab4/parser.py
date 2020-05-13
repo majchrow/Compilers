@@ -211,10 +211,10 @@ class Parser(object):
 
     def p_assignment(self, p):
         """assignment : ID assign_op expression
-                      | ID LBRACKET expression COMMA expression RBRACKET assign_op expression
+                      | ID LBRACKET expressions RBRACKET assign_op expression
         """
-        if len(p) == 9:
-            p[0] = Assignment(Id(p[1]), p[7], p[8], (p[3], p[5]))
+        if len(p) == 7:
+            p[0] = Assignment(Id(p[1]), p[5], p[6], p[3])
         else:
             p[0] = Assignment(Id(p[1]), p[2], p[3])
 

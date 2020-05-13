@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Union, List
 
 
 class AstNode(object):
@@ -88,7 +88,7 @@ class Print(Statement):
 
 
 class Assignment(AstNode):
-    def __init__(self, assign_id: Id, assign_op: str, expression: Expr, with_ref: Tuple[Expr, Expr] = None):
+    def __init__(self, assign_id: Id, assign_op: str, expression: Expr, with_ref: List[Expr] = None):
         self.assign_id = assign_id
         self.assign_op = assign_op
         self.expression = expression
