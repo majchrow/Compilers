@@ -37,7 +37,6 @@ class TypeChecker(NodeVisitor):
         last = len(matrix)-1
         
         for i,vector in enumerate(matrix):
-            print(vector)
             if not isinstance(vector, list):
                 new_matrix.append(vector)
             else:
