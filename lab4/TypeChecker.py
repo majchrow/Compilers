@@ -135,22 +135,33 @@ class TypeChecker(NodeVisitor):
             return None
         same_size, shape = rows_have_same_size(vector)
         if same_size:
+            el_types = []
             for el in vector:
                 if el == ';':
                     continue
                 if isinstance(el, Id):
                     try:
                         var = self.table.get(el.value)
-                        if type(var) not in {int, float, str}:
+                        if type(var) not in {int, float}:
                             self._wrap_with_lineno(node, f"TypeError: bad operand for matrix element: "
                                                          f"{self._get_type(var)}")
                             return None
+                        else:
+                            el_types.append(type(var))
                     except KeyError:
                         self._wrap_with_lineno(node, f"NameError: {el.value} is not defined in given scope")
                         return None
-                if isinstance(el, list):
+                elif isinstance(el, list):
                     self._wrap_with_lineno(node, "TypeError: matrix element cannot be a list")
                     return None
+                else:
+                    if type(el) is int:
+                        el_types.append(float)
+                    else:
+                        el_types.append(type(el))
+            if not all([el_types[0] == el_type for el_type in el_types]):
+                self._wrap_with_lineno(node, "TypeError: matrix elements should have the same type")
+                return None
         else:
             self._wrap_with_lineno(node, "TypeError: matrix rows are not in the same size")
             return None
