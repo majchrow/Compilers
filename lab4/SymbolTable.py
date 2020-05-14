@@ -12,7 +12,7 @@ class SymbolTable(object):
 
     def __init__(self):
         self.current_scope_name = SCOPE.GLOBAL
-        self.current_scope = {}  # ID:str -> type mapping with scope distinction
+        self.current_scope = {}  # ID:str -> Variable mapping with scope distinction
         self.scopes = []
 
     def set_scope_name(self, scope: SCOPE):
