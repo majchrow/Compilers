@@ -249,7 +249,7 @@ class TypeChecker(NodeVisitor):
                 if type(ref1) == int and type(ref2) == int and isinstance(var_id, Matrix):
                     if var_id.shape[0] <= ref1 or var_id.shape[1] <= ref2:
                         self._wrap_with_lineno(node, f"IndexError: matrix indexes out of range "
-                                                     f"{self._get_type(ref1)}, {self._get_type(ref2)}")
+                                                     f"{ref1}, {ref2}")
 
             if not isinstance(var_id, Matrix):
                 self._wrap_with_lineno(node,

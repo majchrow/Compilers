@@ -9,6 +9,6 @@ fi
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python3 main.py ${TEST}
+python3 main.py --filename ${TEST}
 deactivate
 rm -rf .venv # cleanup
