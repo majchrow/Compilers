@@ -55,10 +55,10 @@ class TreePrinter:
         if self.with_ref:
             printWithIndent("REF", indent + 1)
             self.assign_id.printTree(indent + 2)
-            self.with_ref[0].printTree(indent + 2)
-            self.with_ref[1].printTree(indent + 2)
+            for el in self.with_ref:
+                el.printTree(indent + 3)
         else:
-            self.assign_id.printTree(indent + 2)
+            self.assign_id.printTree(indent + 1)
         self.expression.printTree(indent + 1)
 
     @addToClass(Assignments)
@@ -96,7 +96,7 @@ class TreePrinter:
                 printWithIndent("TRANSPOSE", indent+i)
             indent += self.trans
         try:  # for example X = -ones(3)'
-            self.value.printTree(indent + 1)
+            self.value.printTree(indent)
         except AttributeError:
             printWithIndent(self.value, indent)
 
@@ -125,24 +125,18 @@ class TreePrinter:
                 elif (type(elem) is float or type(elem) is int or type(elem) is str):
                     printWithIndent(elem, indent)
                 else:
-                    if isinstance(elem, Id):
-                        elem.printTree(indent+1)
-                    else:
-                        elem.printTree(indent+1)
+                    elem.printTree(indent+1)
 
         vec = self.vector
         print_vector(vec, indent)
 
     @addToClass(Id)
     def printTree(self, indent=0):
-        printWithIndent(self.value, indent - 1)
+        printWithIndent(self.value, indent)
 
     @addToClass(Block)
     def printTree(self, indent=0):
-        if isinstance(self.statements, Statements):
-            self.statements.printTree(indent+1)
-        else:
-            self.statements.printTree(indent)
+        self.statements.printTree(indent)
 
     @addToClass(ForExpr)
     def printTree(self, indent=0):
