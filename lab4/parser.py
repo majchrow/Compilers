@@ -15,15 +15,15 @@ def create_dir(directory):
 class Parser(object):
     tokens = Scanner.tokens
 
-    precedence = (
-        ('nonassoc', 'IFX'),
-        ('nonassoc', 'ELSE'),
+    precedence = (  # Higher position will be executed later in case of conflicts
         ('right', 'ASSIGN', 'ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN'),
         ('nonassoc', 'GE', 'GEQ', 'LE', 'LEQ', 'EQ', 'NEQ'),
-        ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('left', 'ADD', 'SUB', 'DOTADD', 'DOTSUB'),
+        ('left', 'MUL', 'DIV', 'DOTMUL', 'DOTDIV'),
         ('left', 'TRANS'),
         ('right', 'UMINUS'),
+        ('nonassoc', 'IFX'),
+        ('nonassoc', 'ELSE')
     )
 
     def __init__(self, start="program", outputdir="logs", tabmodule="baseparsetab"):
