@@ -232,19 +232,29 @@ class TypeChecker(NodeVisitor):
                 self._wrap_with_lineno(node, f"NameError: {node.assign_id.value} is not defined in given scope")
             if node.assign_op != "=":
                 self._wrap_with_lineno(node, f"TypeError: unsupported operator reference assignment: {node.assign_op}")
+            elif type(var) not in {int, float}:
+                self._wrap_with_lineno(node, f"TypeError: cannot assign variable with type {self._get_type(var)}")
             if len(node.with_ref) != 2:
                 self._wrap_with_lineno(node, f"TypeError: expected 2 arguments for reference assignment,"
                                              f" got: {len(node.with_ref)}")
+            else:
+                ref1 = self.visit(node.with_ref[0])
+                ref2 = self.visit(node.with_ref[1])
+                if type(ref1) != int:
+                    self._wrap_with_lineno(node, f"TypeError: wrong type for reference, got: {self._get_type(ref1)}")
+
+                if type(ref2) != int:
+                    self._wrap_with_lineno(node, f"TypeError: wrong type for reference, got: {self._get_type(ref2)}")
+
+                if type(ref1) == int and type(ref2) == int and isinstance(var_id, Matrix):
+                    if var_id.shape[0] <= ref1 or var_id.shape[1] <= ref2:
+                        self._wrap_with_lineno(node, f"IndexError: matrix indexes out of range "
+                                                     f"{self._get_type(ref1)}, {self._get_type(ref2)}")
+
             if not isinstance(var_id, Matrix):
                 self._wrap_with_lineno(node,
                                        f"TypeError: reference only possible for Matrix, got: {self._get_type(var_id)}")
-            if isinstance(var, Matrix):
-                self._wrap_with_lineno(node, f"TypeError: cannot assign Matrix with reference assignment")
-            for refs in node.with_ref:
-                ref = self.visit(refs)
-                if type(ref) not in {int, float}:
-                    self._wrap_with_lineno(node,
-                                           f"TypeError: wrong type for reference, got: {self._get_type(ref)}")
+
         else:
             if node.assign_op == "=":
                 self.table.put(node.assign_id.value, var)
