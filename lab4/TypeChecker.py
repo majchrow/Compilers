@@ -188,10 +188,9 @@ class TypeChecker(NodeVisitor):
         self.table.set_scope_name(scope)
 
     def visit_ForExpr(self, node: ForExpr):
-        scope = self.table.set_scope_name(SCOPE.LOOP)
         var_start = self.visit(node.start_expr)
         var_end = self.visit(node.end_expr)
-        if type(var_start) != int and type(var_end) != int:
+        if type(var_start) != int or type(var_end) != int:
             self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for iteration expression, got: "
                                          f"{self._get_type(var_start)} and {self._get_type(var_end)}")
             var_type = None
@@ -199,7 +198,6 @@ class TypeChecker(NodeVisitor):
             var_type = int
 
         self.table.put(node.for_id.value, var_type)
-        self.table.set_scope_name(scope)
 
     def visit_Return(self, node: Return):
         if len(node.expressions) != 1:
