@@ -4,6 +4,9 @@ from SymbolTable import *
 
 class NodeVisitor(object):
 
+    def __init__(self):
+        self.error = False
+
     @staticmethod
     def _get_type(var: any):
         if isinstance(var, Matrix):
@@ -20,8 +23,8 @@ class NodeVisitor(object):
         except:
             return (-1, -1)
 
-    @staticmethod
-    def _wrap_with_lineno(node: AstNode, msg: str):
+    def _wrap_with_lineno(self, node: AstNode, msg: str):
+        self.error = True
         print(f"Line {node.lineno}, {msg}")
 
     def visit(self, node: AstNode):
@@ -48,6 +51,7 @@ class NodeVisitor(object):
 class TypeChecker(NodeVisitor):
 
     def __init__(self):
+        super().__init__()
         self.table = SymbolTable()
 
     def visit_Statements(self, node: Statements):
@@ -129,7 +133,8 @@ class TypeChecker(NodeVisitor):
             shape = len(row_sizes), row_sizes[0]
             return all(el == row_sizes[0] for el in row_sizes), shape
 
-        vector = flatten(node.vector) if ';' not in node.vector else node.vector
+        vector = flatten(node.vector) if ';' not in node.vector and all(not isinstance(el, list) for el in node.vector) \
+            else node.vector
         if len(vector) == len(get_indexes_of_semicolons(vector)):
             self._wrap_with_lineno(node, "TypeError: matrix rows cannot be empty")
             return None
@@ -193,11 +198,11 @@ class TypeChecker(NodeVisitor):
         if type(var_start) != int or type(var_end) != int:
             self._wrap_with_lineno(node, f"TypeError: Unsupported operand types for iteration expression, got: "
                                          f"{self._get_type(var_start)} and {self._get_type(var_end)}")
-            var_type = None
+            var = None
         else:
-            var_type = int
+            var = var_start
 
-        self.table.put(node.for_id.value, var_type)
+        self.table.put(node.for_id.value, var)
 
     def visit_Return(self, node: Return):
         if len(node.expressions) != 1:

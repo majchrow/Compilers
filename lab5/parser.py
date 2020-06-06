@@ -3,6 +3,7 @@ import os
 import ply.yacc as yacc
 
 from AST import *
+from Exceptions import ReturnValueException
 from Interpreter import Interpreter
 from TypeChecker import TypeChecker
 from scanner import Scanner
@@ -70,11 +71,20 @@ class Parser(object):
                 self.type_checker.visit(p[0])  # Prints all Type Errors (Syntax Errors are not allowed here)
             else:
                 print(f"Provided program has Syntax error, Type Check won't be executed")
-        if self.interpreter:
-            if not self.error:
-                p[0].accept(self.interpreter)
+        if self.interpretation:
+            if not self.type_check:
+                print(f"Type Check is necessary for Interpretation, Interpretation won't be executed")
             else:
-                print(f"Provided program has Syntax error, Interpretation won't be executed")
+                if self.error:
+                    print(f"Provided program has Syntax error, Interpretation won't be executed")
+                elif self.type_checker.error:
+                    print(f"Provided program has Type Error, Interpretation won't be executed")
+                else:
+                    try:
+                        p[0].accept(self.interpreter)
+                        print(f"No return statement found during interpretation")
+                    except ReturnValueException as e:
+                        print(f"Interpretation finished with exit code {e.value}")
 
     def p_statements(self, p):
         """statements : empty
@@ -100,7 +110,7 @@ class Parser(object):
         if len(p) == 2:
             p[0] = p[1]
         else:
-            p[0] = Statements([p[2]])
+            p[0] = p[2]
 
     def p_statement(self, p):
         """statement : IF expression block %prec IFX
