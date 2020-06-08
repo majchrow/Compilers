@@ -20,7 +20,7 @@ class Interpreter(object):
         "<": operator.lt,
         "<=": operator.le,
         ">": operator.gt,
-        ">+": operator.ge,
+        ">=": operator.ge,
         "==": operator.eq,
         "!=": operator.ne,
         ".+": operator.add,
@@ -52,7 +52,6 @@ class Interpreter(object):
     def visit(self, node: Statements):
         for statement in node.statements:
             if isinstance(statement, Statements):
-                print("Pushing")
                 self.memory.push()
                 statement.accept(self)
                 self.memory.pop()

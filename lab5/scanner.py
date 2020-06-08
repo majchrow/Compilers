@@ -85,6 +85,7 @@ class Scanner(object):
 
     def t_STRING(self, t):
         r'\".*?\"'  # ' ' comments not allowed, for example X = zeros(4)' # ' will tread ' # ' as a string
+        t.value = t.value[1:-1]
         return t
 
     def t_COMMENT(self, t):  # ignore comments
