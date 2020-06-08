@@ -133,7 +133,7 @@ class TypeChecker(NodeVisitor):
             shape = len(row_sizes), row_sizes[0]
             return all(el == row_sizes[0] for el in row_sizes), shape
 
-        vector = flatten(node.vector) if ';' not in node.vector and all(not isinstance(el, list) for el in node.vector) \
+        vector = flatten(node.vector) if ';' not in node.vector and all(isinstance(el, list) for el in node.vector) \
             else node.vector
         if len(vector) == len(get_indexes_of_semicolons(vector)):
             self._wrap_with_lineno(node, "TypeError: matrix rows cannot be empty")
