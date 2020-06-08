@@ -69,14 +69,15 @@ class Interpreter(object):
 
     @when(Variable)
     def visit(self, node: Variable):
-        if isinstance(node.value, Id):
+        if isinstance(node.value, Id) or isinstance(node.value, Matrix):
             value = node.value.accept(self)
-        elif isinstance(node.value, Matrix):
-            matrix = node.value.accept(self)
-            return matrix if node.trans % 2 == 0 else np.transpose(matrix)
         else:
             value = node.value
-        return value if node.minus % 2 == 0 else -value
+
+        # we know correct type from TypeCheck
+        value = value if node.trans % 2 == 0 else np.transpose(value)
+        value = value if node.minus % 2 == 0 else -value
+        return value
 
     @when(Matrix)
     def visit(self, node: Matrix):
